@@ -44,11 +44,11 @@ namespace MLTD.ML
             return o;
         }
 
-        public static OutputData Decide(InputData input)
+        public static OutputData Decide(InputData input, NN neuralNet)
         {
             var iFloat = InputToFloatArray(input);
-            // TODO
-            return FloatArrayToOutput(iFloat);
+
+            return FloatArrayToOutput(neuralNet.Forward(iFloat));
         }
     }
 }
