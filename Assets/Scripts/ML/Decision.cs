@@ -6,7 +6,7 @@ namespace MLTD.ML
 {
     public class Decision
     {
-        private float[] InputToFloatArray(InputData input)
+        private static float[] InputToFloatArray(InputData input)
         {
             List<float> data = new List<float>();
             data.Add(input.Position.x / input.WorldSize.x);
@@ -30,7 +30,7 @@ namespace MLTD.ML
             return data.ToArray();
         }
 
-        private OutputData FloatArrayToOutput(float[] output)
+        private static OutputData FloatArrayToOutput(float[] output)
         {
             var o = new OutputData();
             o.Direction = output[0];
@@ -42,7 +42,7 @@ namespace MLTD.ML
             return o;
         }
 
-        public OutputData Decide(InputData input)
+        public static OutputData Decide(InputData input)
         {
             var iFloat = InputToFloatArray(input);
             // TODO

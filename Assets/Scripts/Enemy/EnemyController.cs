@@ -1,3 +1,4 @@
+using MLTD.ML;
 using UnityEngine;
 
 namespace MLTD.Enemy
@@ -25,7 +26,9 @@ namespace MLTD.Enemy
                 {
                     Debug.DrawLine(transform.position, hit.point, Color.blue);
                 }
-            }  
+            }
+
+            InputData data = new InputData();
         }
     }
 }
