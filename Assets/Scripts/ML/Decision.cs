@@ -19,11 +19,13 @@ namespace MLTD.ML
                 List<float> elems = new List<float>();
                 for (int i = 0; i < max; i++) elems.Add(0f);
                 elems[(int)elem.Item1] = elem.Item2 / input.RaycastMaxSize;
+                data.AddRange(elems);
             }
             foreach (var msg in input.Messages)
             {
                 List<float> m = new List<float>();
                 for (int i = 0; i < msg.Length; i++) m.Add(msg[i] ? 1f : 0f);
+                data.AddRange(m);
             }
             data.Add(input.CanUseSkill ? 1f : 0f);
             data.Add(input.SkillTimer / input.SkillTimerMaxDuration);

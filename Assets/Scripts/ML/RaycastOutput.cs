@@ -4,6 +4,7 @@
     {
         NONE,
         UNKNOWN,
+        WALL,
 
         TURRET_NORMAL,
         TURRET_SLOW,

@@ -20,12 +20,14 @@ namespace MLTD.Enemy
 
         private void SpawnAll()
         {
+            var maxSize = new Vector2(-transform.position.x + _x, transform.position.y + _y);
             for (int x = -_x; x <= _x; x++)
             {
                 for (int y = -_y; y <= _y; y++)
                 {
                     var go = Instantiate(_enemyPrefab, transform.position + new Vector3(x, y), Quaternion.identity);
                     go.transform.parent = transform;
+                    go.GetComponent<EnemyController>().WorldMaxSize = maxSize;
                     _instancied.Add(go);
                 }
             }
