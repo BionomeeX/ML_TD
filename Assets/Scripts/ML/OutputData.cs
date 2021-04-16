@@ -4,7 +4,7 @@
     {
         public float Direction;
         public float Speed;
-        public bool[] Message;
         public bool SkillState;
+        public bool[] Message;
     }
 }

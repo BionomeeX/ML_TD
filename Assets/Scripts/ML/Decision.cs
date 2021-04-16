@@ -30,10 +30,23 @@ namespace MLTD.ML
             return data.ToArray();
         }
 
+        private OutputData FloatArrayToOutput(float[] output)
+        {
+            var o = new OutputData();
+            o.Direction = output[0];
+            o.Speed = output[1];
+            o.SkillState = output[2] > .5f;
+            List<bool> msg = new List<bool>();
+            for (int i = 3; i < output.Length; i++) msg.Add(output[i] < .5f);
+            o.Message = msg.ToArray();
+            return o;
+        }
+
         public OutputData Decide(InputData input)
         {
+            var iFloat = InputToFloatArray(input);
             // TODO
-            return new OutputData();
+            return FloatArrayToOutput(iFloat);
         }
     }
 }
