@@ -36,7 +36,7 @@ namespace MLTD.Enemy
             data.Position = transform.position;
             data.Direction = _rb.velocity.y / _speed;
             data.Speed = _rb.velocity.x / _speed;
-            data.RaycastInfos = new Tuple<RaycastOutput, float>[0];
+            data.RaycastInfos = new Tuple<RaycastOutput, float>[_directions.Length];
             data.RaycastMaxSize = _directions.Length;
             data.Messages = new bool[maxMessageSize][];
             data.CanUseSkill = false;
