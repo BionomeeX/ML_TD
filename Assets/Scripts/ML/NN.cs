@@ -12,7 +12,7 @@ namespace MLTD.ML
             public int size;
 
             public Vector(int size){
-                size = size;
+                this.size = size;
                 data = new float[size];
             }
 
@@ -36,9 +36,9 @@ namespace MLTD.ML
             public int ncolumn;
 
             public Matrix(int nline, int ncol) {
-                nline = nline;
-                ncol = ncol;
-                data = new float[nline * ndata];
+                this.nline = nline;
+                this.ncolumn = ncol;
+                data = new float[nline * ncol];
             }
 
             public float At(int indexLine, int indexColumn) {
@@ -77,7 +77,7 @@ namespace MLTD.ML
 
         public static Vector SoftMax(Vector v){
             Vector result = new Vector(v.size);
-            double total;
+            float total = 0f;
             for(int i = 0; i < v.size; ++i){
                 float tmp = Mathf.Exp( v.At(i) );
                 result.At(i, tmp);
@@ -106,11 +106,10 @@ namespace MLTD.ML
         private int inputSize;
         private int outputSize;
         private List<int> hiddenLayers;
-
         private List<Numeric.Matrix> weigths;
 
-        private
-        NN(int inputSize, int outputSize, List<int> hiddenLayers){
+
+        public NN(int inputSize, int outputSize, List<int> hiddenLayers){
 
         }
 
@@ -119,7 +118,7 @@ namespace MLTD.ML
             foreach(var matrix in weigths){
 
             }
-
+            return new float[0];
         }
     }
 
