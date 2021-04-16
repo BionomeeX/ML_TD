@@ -20,7 +20,6 @@ namespace MLTD.Enemy
         {
             foreach (var dir in _directions)
             {
-                Debug.DrawRay(transform.position + transform.right, dir * _distance, Color.red);
                 var hit = Physics2D.Raycast(transform.position + transform.right, dir, _distance);
                 if (hit.collider != null)
                 {
