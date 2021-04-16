@@ -14,7 +14,7 @@ namespace MLTD.ML
         public NN(int inputSize, List<ADataType> outputs, List<int> hiddenLayers)
         {
             this.inputSize = inputSize;
-            this.outputs = ouputs;
+            this.outputs = outputs;
             this.hiddenLayers = hiddenLayers;
 
             this.weights = new List<Numeric.Matrix>(this.hiddenLayers.Count + outputs.Count);

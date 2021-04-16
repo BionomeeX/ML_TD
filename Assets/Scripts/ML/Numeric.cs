@@ -72,6 +72,8 @@ namespace MLTD.ML{
             Vector result = new Vector(m.nline);
             for(int line = 0; line < m.nline; ++line) {
                 for(int col = 0; col < m.ncolumn; ++col) {
+                    Debug.Log(m.nline + " ; " + m.ncolumn);
+                    var a = v.At(col);
                     result.UpdateAt(line, m.At(line, col) * v.At(col));
                 }
             }

@@ -6,7 +6,7 @@ namespace MLTD.ML
 {
     public class Decision
     {
-        private static float[] InputToFloatArray(InputData input)
+        public static float[] InputToFloatArray(InputData input)
         {
             List<float> data = new List<float>();
             data.Add(input.Position.x / input.WorldSize.x);

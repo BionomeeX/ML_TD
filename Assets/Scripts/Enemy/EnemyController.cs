@@ -21,11 +21,37 @@ namespace MLTD.Enemy
 
         private Rigidbody2D _rb;
 
+        private NN _network;
+
         public Vector2 WorldMaxSize { set; private get; }
+
+        private const int maxMessageSize = 0;
 
         private void Start()
         {
             _rb = GetComponent<Rigidbody2D>();
+
+            InputData data = new InputData();
+            data.WorldSize = WorldMaxSize;
+            data.Position = transform.position;
+            data.Direction = _rb.velocity.y / _speed;
+            data.Speed = _rb.velocity.x / _speed;
+            data.RaycastInfos = new Tuple<RaycastOutput, float>[0];
+            data.RaycastMaxSize = _directions.Length;
+            data.Messages = new bool[maxMessageSize][];
+            data.CanUseSkill = false;
+            data.SkillTimer = 0f;
+            data.SkillTimerMaxDuration = 0f;
+            _network = new NN(
+                Decision.InputToFloatArray(data).Length,
+                new List<ADataType>
+                {
+                    new Range(-1f, 1f),
+                    new Range(-1f, 1f),
+                    new MLTD.ML.Boolean()
+                },
+                new List<int> { 30 }
+                );
         }
 
         private void FixedUpdate()
@@ -69,12 +95,12 @@ namespace MLTD.Enemy
             data.Speed = _rb.velocity.x / _speed;
             data.RaycastInfos = raycasts.ToArray();
             data.RaycastMaxSize = _directions.Length;
-            data.Messages = new bool[0][];
+            data.Messages = new bool[maxMessageSize][];
             data.CanUseSkill = false;
             data.SkillTimer = 0f;
             data.SkillTimerMaxDuration = 0f;
 
-            var output = Decision.Decide(data);
+            var output = Decision.Decide(data, _network);
 
             _rb.velocity = new Vector2(output.Speed, output.Direction) * _speed;
         }
