@@ -42,8 +42,12 @@ namespace MLTD.Enemy
             data.CanUseSkill = false;
             data.SkillTimer = 0f;
             data.SkillTimerMaxDuration = 0f;
+
+            //Debug.Log("data Length : " + Decision.InputToFloatArray(data).Length);
+
             _network = new NN(
-                Decision.InputToFloatArray(data).Length,
+                //Decision.InputToFloatArray(data).Length,
+                56,
                 new List<ADataType>
                 {
                     new Range(-1f, 1f),
