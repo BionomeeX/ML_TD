@@ -50,9 +50,13 @@ namespace MLTD.ML
 
         public float[] Forward(float[] data)
         {
+
+            Debug.Log("NN Forward called with : " + data[0]);
+
             Numeric.Vector result = new Numeric.Vector(data.Length);
             result.data = data;
-            for (int i = 0; i < weights.Count - 1; ++i)
+
+            for (int i = 0; i < hiddenLayers.Count; ++i)
             {
                 result = Numeric.Relu(Numeric.MatMult(weights[i], result));
             }
@@ -60,7 +64,7 @@ namespace MLTD.ML
             List<Numeric.Vector> output = new List<Numeric.Vector>();
             for (int i = 0; i < outputs.Count; ++i)
             {
-                output.Add(outputs[i].Forward(Numeric.MatMult(weights[weights.Count - 1 + i], result)));
+                output.Add(outputs[i].Forward(Numeric.MatMult(weights[hiddenLayers.Count + i], result)));
             }
 
             float[] foutput = new float[OutputSize()];
@@ -72,6 +76,10 @@ namespace MLTD.ML
                     foutput[count] = datum.At(i);
                     ++count;
                 }
+            }
+
+            for(int i = 0; i < foutput.Length; ++i){
+                Debug.Log("foutput " + i + " " + foutput[i]);
             }
 
             return foutput;

@@ -1,66 +1,85 @@
 using UnityEngine;
 
-namespace MLTD.ML{
+namespace MLTD.ML
+{
 
-    public class Numeric{
-        public class Vector {
+    public class Numeric
+    {
+        public class Vector
+        {
             public float[] data;
             public int size;
 
-            public Vector(int size){
+            public Vector(int size)
+            {
                 this.size = size;
                 data = new float[size];
             }
 
-            public float At(int index){
+            public float At(int index)
+            {
                 return data[index];
             }
 
-            public void At(int index, float value){
+            public void At(int index, float value)
+            {
                 data[index] = value;
             }
 
-            public void UpdateAt(int index, float value){
+            public void UpdateAt(int index, float value)
+            {
                 data[index] += value;
             }
 
         }
 
-        public class Matrix {
+        public class Matrix
+        {
             public float[] data;
             public int nline;
             public int ncolumn;
 
-            public Matrix(int nline, int ncol) {
+            public Matrix(int nline, int ncol)
+            {
                 this.nline = nline;
                 this.ncolumn = ncol;
                 data = new float[nline * ncol];
             }
 
-            public float At(int indexLine, int indexColumn) {
+            public float At(int indexLine, int indexColumn)
+            {
                 return data[indexLine * ncolumn + indexColumn];
             }
 
-            public void At(int indexLine, int indexColumn, float value) {
+            public void At(int indexLine, int indexColumn, float value)
+            {
                 data[indexLine * ncolumn + indexColumn] = value;
             }
-            public void UpdateAt(int indexLine, int indexColumn, float value) {
+            public void UpdateAt(int indexLine, int indexColumn, float value)
+            {
                 data[indexLine * ncolumn + indexColumn] += value;
             }
 
-            public void Randomize() {
-                for(int i = 0; i < nline * ncolumn; ++i){
-                    data[i] = Random.Range(-1f, 1f);
+            public void Randomize()
+            {
+                float limit = Mathf.Sqrt(6 / (ncolumn + nline));
+                for (int i = 0; i < nline * ncolumn; ++i)
+                {
+                    data[i] = RandomGaussian(-limit, +limit); //Random.Range(-1f, 1f);
                 }
             }
 
         }
 
-        public static Matrix MatMult(Matrix m1, Matrix m2) {
+        public static Matrix MatMult(Matrix m1, Matrix m2)
+        {
             Matrix result = new Matrix(m1.nline, m2.ncolumn);
-            for(int line = 0; line < m1.nline; ++line) {
-                for(int col=0; col < m2.ncolumn; ++col) {
-                    for(int k = 0; k < m1.ncolumn; ++k) {
+            for (int line = 0; line < m1.nline; ++line)
+            {
+                for (int col = 0; col < m2.ncolumn; ++col)
+                {
+                    for (int k = 0; k < m1.ncolumn; ++k)
+                    {
                         result.UpdateAt(line, col, m1.At(line, k) * m2.At(k, col));
                     }
                 }
@@ -68,48 +87,81 @@ namespace MLTD.ML{
             return result;
         }
 
-        public static Vector MatMult(Matrix m, Vector v) {
+        public static Vector MatMult(Matrix m, Vector v)
+        {
             Vector result = new Vector(m.nline);
-            for(int line = 0; line < m.nline; ++line) {
-                for(int col = 0; col < m.ncolumn; ++col) {
-                    Debug.Log(m.nline + " ; " + m.ncolumn);
-                    var a = v.At(col);
+            for (int line = 0; line < m.nline; ++line)
+            {
+                for (int col = 0; col < m.ncolumn; ++col)
+                {
+                    //Debug.Log(m.nline + " ; " + m.ncolumn);
+                    //var a = v.At(col);
                     result.UpdateAt(line, m.At(line, col) * v.At(col));
                 }
             }
             return result;
         }
 
-        public static Vector SoftMax(Vector v){
+        public static Vector SoftMax(Vector v)
+        {
             Vector result = new Vector(v.size);
             float total = 0f;
-            for(int i = 0; i < v.size; ++i){
-                float tmp = Mathf.Exp( v.At(i) );
+            for (int i = 0; i < v.size; ++i)
+            {
+                float tmp = Mathf.Exp(v.At(i));
                 result.At(i, tmp);
                 total += tmp;
             }
 
-            for(int i = 0; i < v.size; ++i){
+            for (int i = 0; i < v.size; ++i)
+            {
                 result.At(i, result.At(i) / total);
             }
 
             return result;
         }
 
-        public static Vector Sigmoid(Vector v, float min = 0f, float max = 1f){
+        public static Vector Sigmoid(Vector v, float min = 0f, float max = 1f)
+        {
             Vector result = new Vector(v.size);
-            for(int i = 0; i < v.size; ++i){
-                result.At(i, min + (max - min) / (1 + Mathf.Exp(-v.At(i))) );
+            for (int i = 0; i < v.size; ++i)
+            {
+                Debug.Log("v at " + i + " " + v.At(i));
+                result.At(i, min + (max - min) / (1 + Mathf.Exp(-v.At(i))));
             }
             return result;
         }
 
-        public static Vector Relu(Vector v){
+        public static Vector Relu(Vector v)
+        {
             Vector result = new Vector(v.size);
-            for(int i = 0; i < v.size; ++i){
+            for (int i = 0; i < v.size; ++i)
+            {
                 result.At(i, v.At(i) > 0 ? v.At(i) : 0f);
             }
             return result;
+        }
+
+        public static float RandomGaussian(float minValue = 0.0f, float maxValue = 1.0f)
+        {
+            float u, v, S;
+
+            do
+            {
+                u = 2.0f * UnityEngine.Random.value - 1.0f;
+                v = 2.0f * UnityEngine.Random.value - 1.0f;
+                S = u * u + v * v;
+            }
+            while (S >= 1.0f);
+
+            // Standard Normal Distribution
+            float std = u * Mathf.Sqrt(-2.0f * Mathf.Log(S) / S);
+
+            // Normal Distribution centered between the min and max value
+            // and clamped following the "three-sigma rule"
+            float mean = (minValue + maxValue) / 2.0f;
+            float sigma = (maxValue - mean) / 3.0f;
+            return Mathf.Clamp(std * sigma + mean, minValue, maxValue);
         }
     }
 
