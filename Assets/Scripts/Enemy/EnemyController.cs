@@ -31,19 +31,8 @@ namespace MLTD.Enemy
         {
             _rb = GetComponent<Rigidbody2D>();
 
-            InputData data = new InputData();
-            data.WorldSize = WorldMaxSize;
-            data.Position = transform.position;
-            data.Direction = _rb.velocity.y / _speed;
-            data.Speed = _rb.velocity.x / _speed;
-            data.RaycastInfos = new Tuple<RaycastOutput, float>[_directions.Length];
-            data.RaycastMaxSize = _directions.Length;
-            data.Messages = new bool[maxMessageSize][];
-            data.CanUseSkill = false;
-            data.SkillTimer = 0f;
-            data.SkillTimerMaxDuration = 0f;
             _network = new NN(
-                Decision.InputToFloatArray(data).Length,
+                Decision.GetFloatArraySize(_directions.Length, maxMessageSize),
                 new List<ADataType>
                 {
                     new Range(-1f, 1f),

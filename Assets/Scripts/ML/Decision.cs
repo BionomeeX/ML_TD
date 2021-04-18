@@ -1,11 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace MLTD.ML
 {
     public class Decision
     {
+        public static int GetFloatArraySize(int dirLength, int msgSize)
+        {
+            InputData data = new InputData();
+
+            data.WorldSize = Vector2.one;
+            data.Position = Vector2.one;
+            data.Direction = 1f;
+            data.Speed = 1f;
+            data.RaycastInfos = new Tuple<RaycastOutput, float>[dirLength];
+            for (int i = 0; i < dirLength; i++)
+                data.RaycastInfos[i] = new Tuple<RaycastOutput, float>(RaycastOutput.NONE, 0f);
+            data.RaycastMaxSize = dirLength;
+            data.Messages = new bool[msgSize][];
+            data.CanUseSkill = false;
+            data.SkillTimer = 0f;
+            data.SkillTimerMaxDuration = 0f;
+
+            return InputToFloatArray(data).Length;
+        }
+
         public static float[] InputToFloatArray(InputData input)
         {
             List<float> data = new List<float>();
