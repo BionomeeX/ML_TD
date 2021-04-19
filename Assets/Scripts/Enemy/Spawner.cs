@@ -136,6 +136,8 @@ namespace MLTD.Enemy
             str.AppendLine("Speed: " + output.Speed);
             str.AppendLine("Skill state: " + output.SkillState);
             str.AppendLine("Message: " + string.Join("", output.Message.Select(x => x ? "1" : "0")));
+
+            _debugText.text = str.ToString();
         }
 
         public void SetDebug(EnemyController ec)
