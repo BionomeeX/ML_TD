@@ -41,7 +41,7 @@ namespace MLTD.Enemy
         private EnemyController _leader;
 
         // Function we send debug info to
-        public Action<InputData, OutputData> DisplayDebugCallback { set; get; }
+        public Action<EnemyController, InputData, OutputData> DisplayDebugCallback { set; get; }
 
         // Keep track of the spawner that instanciated us
         private Spawner _spawner;
@@ -54,7 +54,7 @@ namespace MLTD.Enemy
         /// </summary>
         private void OnMouseDown()
         {
-            _spawner.SetDebug(this);
+            _spawner.SetDebug(this, true);
         }
 
         private void Start()
@@ -166,12 +166,15 @@ namespace MLTD.Enemy
             var output = Decision.Decide(data, Network);
 
             // If a debug callback is set, we use it
-            DisplayDebugCallback?.Invoke(data, output);
+            DisplayDebugCallback?.Invoke(this, data, output);
 
             // Use info returned by neural network
             _rb.AddForce(new Vector2(output.Speed, output.Direction) * _speed);
-            _rb.velocity = Vector2.ClampMagnitude(_rb.velocity, 1f);
+            _rb.velocity = Vector2.ClampMagnitude(_rb.velocity, _speed);
             _lastMessage = output.Message;
         }
+
+        public Vector2 GetVelocity()
+            => _rb.velocity;
     }
 }

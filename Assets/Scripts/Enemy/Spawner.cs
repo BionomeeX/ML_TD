@@ -22,6 +22,7 @@ namespace MLTD.Enemy
         [SerializeField]
         private GameObject _debugDisplay;
         private Text _debugText;
+        private bool _isDebugSetManually = false;
 
         // List of all instanciated ennemies
         private List<EnemyController> _instancied = new List<EnemyController>();
@@ -38,8 +39,11 @@ namespace MLTD.Enemy
 
         private void Start()
         {
-            _debugDisplay.SetActive(false);
             StartCoroutine(SpawnAll());
+            if (_debugDisplay != null)
+            {
+                StartCoroutine(KeepDebugUpdated());
+            }
         }
 
         /// <summary>
@@ -54,8 +58,11 @@ namespace MLTD.Enemy
             while (true)
             {
                 // Reset debug pannel
-                _currentDebugFollowed = null;
-                _debugDisplay.SetActive(false);
+                if (_debugDisplay.activeInHierarchy)
+                {
+                    _currentDebugFollowed = null;
+                    _isDebugSetManually = false;
+                }
 
                 var maxSize = new Vector2(-transform.position.x + _x, transform.position.y + _y);
                 int count = 0;
@@ -81,6 +88,7 @@ namespace MLTD.Enemy
                         else type = RaycastOutput.ENEMY_SCOUT;
                         ec.Init(networks.Count == 0 ? null : new NN(networks[count]), type, this);
                         ec.WorldMaxSize = maxSize;
+                        ec.name = "AI " + count;
 
                         // We keep track of leaders
                         if (type == RaycastOutput.ENEMY_LEADER)
@@ -93,9 +101,12 @@ namespace MLTD.Enemy
                 }
 
                 // Set the leader of each AI (leader doesn't have another leader on top of them)
-                foreach (var e in _instancied)
+                if (leaders.Count > 0)
                 {
-                    e.SetLeader(e.MyType == RaycastOutput.ENEMY_LEADER ? null : leaders[Random.Range(0, leaders.Count)]);
+                    foreach (var e in _instancied)
+                    {
+                        e.SetLeader(e.MyType == RaycastOutput.ENEMY_LEADER ? null : leaders[Random.Range(0, leaders.Count)]);
+                    }
                 }
 
                 // Display the timer on the game
@@ -128,6 +139,25 @@ namespace MLTD.Enemy
             }
         }
 
+        // Update the debug with the element the further on the X axis, is disabled if the user manually select an element
+        private IEnumerator KeepDebugUpdated()
+        {
+            while (true)
+            {
+                if (!_isDebugSetManually)
+                {
+                    lock(_instancied)
+                    {
+                        if (_instancied.Count > 0)
+                        {
+                            SetDebug(_instancied.OrderByDescending(x => x.transform.position.x).First(), false);
+                        }
+                    }
+                }
+                yield return new WaitForSeconds(1f);
+            }
+        }
+
         /// <summary>
         /// Draw line to show spawn bounds
         /// </summary>
@@ -148,10 +178,14 @@ namespace MLTD.Enemy
         /// </summary>
         /// <param name="input">Last infos the AI sent to the neural network</param>
         /// <param name="output">Last infos the AI received from the neural network</param>
-        private void DisplayDebug(InputData input, OutputData output)
+        private void DisplayDebug(EnemyController ec, InputData input, OutputData output)
         {
             StringBuilder str = new StringBuilder();
-            str.AppendLine("<b>INPUT</b>");
+            str.AppendLine("<b>GENERAL</b>");
+            str.AppendLine(ec.name + " - " + ec.MyType.ToString());
+            var v = ec.GetVelocity();
+            str.AppendLine($"Velocity: ({v.x:0.00};{v.y:0.00})");
+            str.AppendLine("\n<b>INPUT</b>");
             str.AppendLine($"Position: ({input.Position.x:0.00};{input.Position.y:0.00})");
             str.AppendLine($"Leader Position: ({input.LeaderPosition.x:0.00};{input.LeaderPosition.y:0.00})");
             str.AppendLine($"Direction: {input.Direction:0.00}");
@@ -177,12 +211,13 @@ namespace MLTD.Enemy
         /// Set callback method so an AI can send debug info
         /// </summary>
         /// <param name="ec">AI we will track</param>
-        public void SetDebug(EnemyController ec)
+        public void SetDebug(EnemyController ec, bool isDebugSetManually)
         {
             if (_currentDebugFollowed != null)
             {
                 _currentDebugFollowed.DisplayDebugCallback = null;
             }
+            _isDebugSetManually = isDebugSetManually;
             ec.DisplayDebugCallback = DisplayDebug;
             _currentDebugFollowed = ec;
             _debugDisplay.SetActive(true);
