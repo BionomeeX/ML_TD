@@ -31,6 +31,7 @@ namespace MLTD.Player
             StartCoroutine(IncreaseGold());
         }
 
+        // Move player with Horizontal and Vertical axis defined in Input tab
         private void FixedUpdate()
         {
             var hor = Input.GetAxis("Horizontal");
@@ -43,11 +44,12 @@ namespace MLTD.Player
             _goldDisplay.text = "Your Gold: " + GoldAmount;
         }
 
+        // We win X gold each Y seconds
         private IEnumerator IncreaseGold()
         {
             while (true)
             {
-                _goldDisplay.text = "Your Gold: " + GoldAmount;
+                UpdateGoldText();
                 yield return new WaitForSeconds(_goldWaitTime);
                 GoldAmount += _goldIncrease;
             }

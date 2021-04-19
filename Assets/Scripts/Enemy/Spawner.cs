@@ -10,24 +10,30 @@ namespace MLTD.Enemy
 {
     public class Spawner : MonoBehaviour
     {
+        [Tooltip("Prefab for new ennemies")]
         [SerializeField]
         private GameObject _enemyPrefab;
 
+        [Tooltip("Text UI that display time remainding")]
         [SerializeField]
         private Text _timeRemainding;
 
+        [Tooltip("Pannel that will contains debug info")]
         [SerializeField]
         private GameObject _debugDisplay;
-
         private Text _debugText;
 
+        // List of all instanciated ennemies
         private List<EnemyController> _instancied = new List<EnemyController>();
 
+        // Spawn zone
         private const int _x = 3;
         private const int _y = 5;
 
+        // Current wave
         private int _waveCount = 1;
 
+        // Current enemy we display debug information about
         private EnemyController _currentDebugFollowed;
 
         private void Start()
@@ -36,6 +42,9 @@ namespace MLTD.Enemy
             StartCoroutine(SpawnAll());
         }
 
+        /// <summary>
+        /// Coroutine that manage the spawing and training of AI
+        /// </summary>
         private IEnumerator SpawnAll()
         {
             int bestOfMaxCount = 20;
@@ -44,17 +53,26 @@ namespace MLTD.Enemy
 
             while (true)
             {
+                // Reset debug pannel
                 _currentDebugFollowed = null;
                 _debugDisplay.SetActive(false);
+
                 var maxSize = new Vector2(-transform.position.x + _x, transform.position.y + _y);
                 int count = 0;
-                List<Transform> leaders = new List<Transform>();
+
+                // Keep list of all leaders currently spawned
+                List<EnemyController> leaders = new List<EnemyController>();
+
+                // Spawn AI on each tile of spawn zone
                 for (int x = -_x; x <= _x; x++)
                 {
                     for (int y = -_y; y <= _y; y++)
                     {
+                        // Spawn AI
                         var go = Instantiate(_enemyPrefab, transform.position + new Vector3(x, y), Quaternion.identity);
                         go.transform.parent = transform;
+
+                        // Set AI type
                         var ec = go.GetComponent<EnemyController>();
                         var rand = Random.Range(0, 100);
                         RaycastOutput type;
@@ -62,19 +80,25 @@ namespace MLTD.Enemy
                         else if (rand < 20) type = RaycastOutput.ENEMY_SHIELD;
                         else type = RaycastOutput.ENEMY_SCOUT;
                         ec.Init(networks.Count == 0 ? null : new NN(networks[count]), type, this);
+                        ec.WorldMaxSize = maxSize;
+
+                        // We keep track of leaders
                         if (type == RaycastOutput.ENEMY_LEADER)
                         {
-                            leaders.Add(ec.transform);
+                            leaders.Add(ec);
                         }
-                        ec.WorldMaxSize = maxSize;
                         _instancied.Add(ec);
                         count++;
                     }
                 }
+
+                // Set the leader of each AI (leader doesn't have another leader on top of them)
                 foreach (var e in _instancied)
                 {
                     e.SetLeader(e.MyType == RaycastOutput.ENEMY_LEADER ? null : leaders[Random.Range(0, leaders.Count)]);
                 }
+
+                // Display the timer on the game
                 var timer = 10f;
                 while (timer > 0)
                 {
@@ -83,6 +107,7 @@ namespace MLTD.Enemy
                     timer--;
                 }
 
+                // Keep best AI and setup new neural networks for next generation
                 List<(NN network, float score)> oldgen = _instancied.Select(ec => (ec.Network, ec.gameObject.transform.position.x)).ToList();
                 networks_BestOf.AddRange(oldgen);
                 networks_BestOf.Sort(delegate
@@ -91,9 +116,9 @@ namespace MLTD.Enemy
                     return b.score.CompareTo(a.score);
                 });
                 networks_BestOf = networks_BestOf.Take(bestOfMaxCount).ToList();
-
                 networks = GeneticAlgorithm.GeneratePool(oldgen, networks_BestOf, _instancied.Count);
 
+                // All AIs are killed
                 foreach (var p in _instancied)
                 {
                     Destroy(p.gameObject);
@@ -103,6 +128,9 @@ namespace MLTD.Enemy
             }
         }
 
+        /// <summary>
+        /// Draw line to show spawn bounds
+        /// </summary>
         private void OnDrawGizmos()
         {
             Gizmos.color = Color.red;
@@ -115,6 +143,11 @@ namespace MLTD.Enemy
             Gizmos.DrawLine(mid - up + right, mid - up - right);
         }
 
+        /// <summary>
+        /// Display all debug information for one AI
+        /// </summary>
+        /// <param name="input">Last infos the AI sent to the neural network</param>
+        /// <param name="output">Last infos the AI received from the neural network</param>
         private void DisplayDebug(InputData input, OutputData output)
         {
             StringBuilder str = new StringBuilder();
@@ -140,6 +173,10 @@ namespace MLTD.Enemy
             _debugText.text = str.ToString();
         }
 
+        /// <summary>
+        /// Set callback method so an AI can send debug info
+        /// </summary>
+        /// <param name="ec">AI we will track</param>
         public void SetDebug(EnemyController ec)
         {
             if (_currentDebugFollowed != null)

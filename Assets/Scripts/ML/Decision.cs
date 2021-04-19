@@ -7,6 +7,7 @@ namespace MLTD.ML
 {
     public class Decision
     {
+        // Get the size of a request to the neural network
         public static int GetFloatArraySize(int dirLength, int nbMessages, int msgSize)
         {
             InputData data = new InputData();
@@ -32,6 +33,7 @@ namespace MLTD.ML
             return InputToFloatArray(data).Length;
         }
 
+        // Input structure to float array for the neural network
         public static float[] InputToFloatArray(InputData input)
         {
             List<float> data = new List<float>();
@@ -62,6 +64,7 @@ namespace MLTD.ML
             return data.ToArray();
         }
 
+        // Neural network float array to output structure
         private static OutputData FloatArrayToOutput(float[] output)
         {
             var o = new OutputData();
@@ -74,6 +77,7 @@ namespace MLTD.ML
             return o;
         }
 
+        // Call to the neural network
         public static OutputData Decide(InputData input, NN neuralNet)
         {
             var iFloat = InputToFloatArray(input);
