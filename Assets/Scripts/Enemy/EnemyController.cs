@@ -87,7 +87,7 @@ namespace MLTD.Enemy
             data.Messages = new bool[maxMessageSize][];
             data.CanUseSkill = false;
             data.SkillTimer = 0f;
-            data.SkillTimerMaxDuration = 0f;
+            data.SkillTimerMaxDuration = 1f;
 
             var output = Decision.Decide(data, _network);
 
