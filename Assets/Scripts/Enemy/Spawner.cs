@@ -38,12 +38,16 @@ namespace MLTD.Enemy
 
         private IEnumerator SpawnAll()
         {
+            int bestOfMaxCount = 20;
             List<NN> networks = new List<NN>();
+            List<(NN network, float score)> networks_BestOf = new List<(NN network, float score)>(bestOfMaxCount);
+
             while (true)
             {
                 _currentDebugFollowed = null;
                 _debugDisplay.SetActive(false);
                 var maxSize = new Vector2(-transform.position.x + _x, transform.position.y + _y);
+                int count = 0;
                 List<Transform> leaders = new List<Transform>();
                 for (int x = -_x; x <= _x; x++)
                 {
@@ -57,13 +61,14 @@ namespace MLTD.Enemy
                         if (rand < 5) type = RaycastOutput.ENEMY_LEADER;
                         else if (rand < 20) type = RaycastOutput.ENEMY_SHIELD;
                         else type = RaycastOutput.ENEMY_SCOUT;
-                        ec.Init(networks.Count == 0 ? null : new NN(networks[Random.Range(0, networks.Count)]), type, this);
+                        ec.Init(networks.Count == 0 ? null : new NN(networks[count]), type, this);
                         if (type == RaycastOutput.ENEMY_LEADER)
                         {
                             leaders.Add(ec.transform);
                         }
                         ec.WorldMaxSize = maxSize;
                         _instancied.Add(ec);
+                        count++;
                     }
                 }
                 foreach (var e in _instancied)
@@ -77,7 +82,18 @@ namespace MLTD.Enemy
                     _timeRemainding.text = $"Wave {_waveCount} end in {timer} seconds";
                     timer--;
                 }
-                networks = GeneticAlgorithm.GeneratePool(_instancied.Select(ec => (ec.Network, ec.gameObject.transform.position.x)).ToList(), 100);
+
+                List<(NN network, float score)> oldgen = _instancied.Select(ec => (ec.Network, ec.gameObject.transform.position.x)).ToList();
+                networks_BestOf.AddRange(oldgen);
+                networks_BestOf.Sort(delegate
+                ((NN network, float score) a, (NN network, float score) b)
+                {
+                    return b.score.CompareTo(a.score);
+                });
+                networks_BestOf = networks_BestOf.Take(bestOfMaxCount).ToList();
+
+                networks = GeneticAlgorithm.GeneratePool(oldgen, networks_BestOf, _instancied.Count);
+
                 foreach (var p in _instancied)
                 {
                     Destroy(p.gameObject);

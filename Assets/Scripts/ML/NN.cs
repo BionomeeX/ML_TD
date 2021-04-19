@@ -56,6 +56,14 @@ namespace MLTD.ML
             this.weights = new List<Numeric.Matrix>(other.weights);
         }
 
+        public static NN RandomLike(NN other) {
+            NN newNN = new NN(other);
+            foreach(var w in newNN.weights){
+                w.Randomize();
+                w.ScaleByLine();
+            }
+            return newNN;
+        }
 
         public int OutputSize()
         {
