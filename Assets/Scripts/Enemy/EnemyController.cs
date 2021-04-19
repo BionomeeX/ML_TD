@@ -8,18 +8,19 @@ namespace MLTD.Enemy
     public class EnemyController : MonoBehaviour
     {
         // Directions of the raycast done by the AI to get information
-        private readonly Vector2[] _directions = new[]
+        private readonly float[] _directions = new[]
         {
-            new Vector2(1f, .1f).normalized,
-            new Vector2(1f, .2f).normalized,
-            new Vector2(1f, 0f).normalized,
-            new Vector2(1f, -.1f).normalized,
-            new Vector2(1f, -.2f).normalized
+            .1f,
+            .2f,
+            0f,
+            -.1f,
+            -.2f
         };
 
         // Constant variable for AI movements
         private const float _distance = 20f;
         private const float _speed = 5f;
+        private const float _angularSpeed = 10f;
 
         private Rigidbody2D _rb;
 
@@ -111,7 +112,7 @@ namespace MLTD.Enemy
             List<Tuple<RaycastOutput, float>> raycasts = new List<Tuple<RaycastOutput, float>>();
             foreach (var dir in _directions)
             {
-                var hit = Physics2D.Raycast(transform.position + transform.right, dir, _distance);
+                var hit = Physics2D.Raycast(transform.position + transform.right / 2f, transform.right + transform.up * dir, _distance);
                 RaycastOutput ro = RaycastOutput.NONE;
                 float dist = _distance;
                 if (hit.collider != null)
@@ -141,8 +142,8 @@ namespace MLTD.Enemy
             {
                 WorldSize = WorldMaxSize,
                 Position = transform.position,
-                Direction = _rb.velocity.y / _speed,
-                Speed = _rb.velocity.x / _speed,
+                Direction = transform.rotation.eulerAngles.z / 360f,
+                Speed = _rb.velocity.magnitude / _speed,
                 RaycastInfos = raycasts.ToArray(),
                 RaycastMaxSize = _directions.Length
             };
@@ -169,7 +170,8 @@ namespace MLTD.Enemy
             DisplayDebugCallback?.Invoke(this, data, output);
 
             // Use info returned by neural network
-            _rb.AddForce(new Vector2(output.Speed, output.Direction) * _speed);
+            _rb.AddForce(transform.right * output.Speed * _speed);
+            transform.Rotate(new Vector3(0f, 0f, output.Direction * _angularSpeed));
             _rb.velocity = Vector2.ClampMagnitude(_rb.velocity, _speed);
             _lastMessage = output.Message;
         }

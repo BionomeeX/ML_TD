@@ -24,6 +24,8 @@ namespace MLTD.Enemy
         private Text _debugText;
         private bool _isDebugSetManually = false;
 
+        private const float _waveLength = 15f;
+
         // List of all instanciated ennemies
         private List<EnemyController> _instancied = new List<EnemyController>();
 
@@ -110,7 +112,7 @@ namespace MLTD.Enemy
                 }
 
                 // Display the timer on the game
-                var timer = 10f;
+                var timer = _waveLength;
                 while (timer > 0)
                 {
                     yield return new WaitForSeconds(1f);

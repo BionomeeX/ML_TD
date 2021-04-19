@@ -25,9 +25,9 @@ namespace MLTD.Turret
 
                 // If there is no turret in this position
                 if (!_turrets.Any(x => x.Key.x == dictPos.x && x.Key.y == dictPos.y)
-                    && PlayerController.S.GoldAmount >= 5) // Turret cost 5 gold
+                    && PlayerController.S.GoldAmount >= 0) // Turret cost 5 gold
                 {
-                    PlayerController.S.GoldAmount -= 5;
+                    PlayerController.S.GoldAmount -= 0;
                     PlayerController.S.UpdateGoldText();
                     var finalPos = new Vector2(dictPos.x + .5f, dictPos.y + .5f); // .5f is to put the turret on the right grid position
                     _turrets.Add(dictPos, Instantiate(_turret, finalPos, Quaternion.identity));
