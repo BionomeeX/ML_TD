@@ -27,9 +27,27 @@ namespace MLTD.Enemy
 
         private const int maxMessageSize = 0;
 
+        public RaycastOutput MyType { private set; get; }
+
         private void Start()
         {
             _rb = GetComponent<Rigidbody2D>();
+            var rand = UnityEngine.Random.Range(0, 100);
+            if (rand < 5)
+            {
+                MyType = RaycastOutput.ENEMY_LEADER;
+                GetComponent<SpriteRenderer>().color = Color.yellow;
+            }
+            else if (rand < 20)
+            {
+                MyType = RaycastOutput.ENEMY_SHIELD;
+                GetComponent<SpriteRenderer>().color = Color.gray;
+            }
+            else
+            {
+                MyType = RaycastOutput.ENEMY_SCOUT;
+                GetComponent<SpriteRenderer>().color = Color.red;
+            }
         }
 
         public void Init(NN network)
@@ -65,7 +83,7 @@ namespace MLTD.Enemy
                             break;
 
                         case "Enemy":
-                            ro = RaycastOutput.ENEMY_SCOUT;
+                            ro = hit.collider.GetComponent<EnemyController>().MyType;
                             break;
 
                         case "Wall":
