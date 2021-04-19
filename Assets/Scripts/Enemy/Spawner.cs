@@ -44,6 +44,12 @@ namespace MLTD.Enemy
 
         private void Start()
         {
+            if (!_settings.EnableDebug)
+            {
+                _debugDisplay = null;
+            }
+            int enemyLayerCollision = 6;
+            Physics2D.IgnoreLayerCollision(6, 6, !_settings.EnableAICollision);
             StartCoroutine(SpawnAll());
             if (_debugDisplay != null)
             {
@@ -88,8 +94,7 @@ namespace MLTD.Enemy
                         var ec = go.GetComponent<EnemyController>();
                         var rand = Random.Range(0, 100);
                         RaycastOutput type;
-                        if (rand < 5) type = RaycastOutput.ENEMY_LEADER;
-                        else if (rand < 20) type = RaycastOutput.ENEMY_SHIELD;
+                        if (_settings.EnableLeadership && rand < _settings.LeadershipChance) type = RaycastOutput.ENEMY_LEADER;
                         else type = RaycastOutput.ENEMY_SCOUT;
                         ec.Init(networks.Count == 0 ? null : new NN(networks[count]), type, this, _settings);
                         ec.WorldMaxSize = maxSize;
@@ -106,7 +111,7 @@ namespace MLTD.Enemy
                 }
 
                 // Set the leader of each AI (leader doesn't have another leader on top of them)
-                if (leaders.Count > 0)
+                if (_settings.EnableLeadership && leaders.Count > 0)
                 {
                     foreach (var e in _instancied)
                     {
@@ -190,9 +195,13 @@ namespace MLTD.Enemy
             str.AppendLine(ec.name + " - " + ec.MyType.ToString());
             var v = ec.GetVelocity();
             str.AppendLine($"Velocity: ({v.x:0.00};{v.y:0.00})");
+
             str.AppendLine("\n<b>INPUT</b>");
             str.AppendLine($"Position: ({input.Position.x:0.00};{input.Position.y:0.00})");
-            str.AppendLine($"Leader Position: ({input.LeaderPosition.x:0.00};{input.LeaderPosition.y:0.00})");
+            if (_settings.EnableLeadership)
+            {
+                str.AppendLine($"Leader Position: ({input.LeaderPosition.x:0.00};{input.LeaderPosition.y:0.00})");
+            }
             str.AppendLine($"Direction: {input.Direction:0.00}");
             str.AppendLine($"Speed: {input.Speed:0.00}");
             int i = 1;
@@ -201,6 +210,7 @@ namespace MLTD.Enemy
                 str.AppendLine($"Raycast {i}: {ray.Item1} (Distance {ray.Item2:0.00})");
                 i++;
             }
+
             if (_settings.EnableMemory)
             {
                 i = 1;
@@ -210,8 +220,10 @@ namespace MLTD.Enemy
                     i++;
                 }
             }
+
             str.AppendLine("\n<b>RAW INPUT</b>");
             str.AppendLine(string.Join(", ", Decision.InputToFloatArray(_settings, input).Select(x => x.ToString("0.00"))));
+
             str.AppendLine("\n<b>OUTPUT</b>");
             str.AppendLine($"Direction: {output.Direction:0.00}");
             str.AppendLine($"Speed: {output.Speed:0.00}");

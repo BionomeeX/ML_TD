@@ -38,7 +38,23 @@ namespace MLTD.ML
         };
 
 
-        [Header("Memory settings, must not be changed once enabled")]
+        [Header("Physics settings")]
+
+        [Tooltip("Can the AIs collide between each others")]
+        public bool EnableAICollision = false;
+
+
+        [Header("Leadership settings")]
+
+        [Tooltip("Enable leadership, a random amount of leader will spawn, each soldiers are assigned to a leader")]
+        public bool EnableLeadership = true;
+
+        [Tooltip("Change that an AI is a leader")]
+        [Range(1, 100)]
+        public int LeadershipChance = 5;
+
+
+        [Header("Memory settings")]
 
         [Tooltip("Enable memory: AI will remember what it saw recently")]
         public bool EnableMemory = false;
@@ -49,6 +65,21 @@ namespace MLTD.ML
 
         [Tooltip("How much time will past between 2 data acquisition")]
         [Range(0.02f, 5f)]
-        public float TimeBetweenMemoryAcquisition;
+        public float TimeBetweenMemoryAcquisition = 1f;
+
+
+        [Header("Debug settings")]
+
+        [Tooltip("Enable display of debug information with gizmos")]
+        public bool EnableDebug = true;
+
+        [Tooltip("Display vision raycasts")]
+        public Color VisionDebug = Color.clear;
+
+        [Tooltip("Display vision raycasts when colliding with something")]
+        public Color VisionCollidingDebug = Color.blue;
+
+        [Tooltip("Display connections between leader and subalternes")]
+        public Color LeadershipDebug = Color.green;
     }
 }

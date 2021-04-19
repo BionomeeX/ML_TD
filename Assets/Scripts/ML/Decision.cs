@@ -20,15 +20,19 @@ namespace MLTD.ML
             for (int i = 0; i < settings.VisionAngles.Length; i++)
                 data.RaycastInfos[i] = new Tuple<RaycastOutput, float>(RaycastOutput.NONE, 0f);
             data.RaycastMaxSize = settings.VisionAngles.Length;
-            data.Messages = new bool[nbMessages][];
-            for (int i = 0; i < nbMessages; i++)
-            {
-                data.Messages[i] = new bool[msgSize];
-            }
             data.CanUseSkill = false;
             data.SkillTimer = 0f;
             data.SkillTimerMaxDuration = 0f;
-            data.LeaderPosition = Vector2.one;
+
+            if (settings.EnableLeadership)
+            {
+                data.Messages = new bool[nbMessages][];
+                for (int i = 0; i < nbMessages; i++)
+                {
+                    data.Messages[i] = new bool[msgSize];
+                }
+                data.LeaderPosition = Vector2.one;
+            }
 
             if (settings.EnableMemory)
             {
@@ -58,16 +62,21 @@ namespace MLTD.ML
                 elems[(int)elem.Item1] = elem.Item2 / input.RaycastMaxSize;
                 data.AddRange(elems);
             }
-            foreach (var msg in input.Messages)
-            {
-                List<float> m = new List<float>();
-                for (int i = 0; i < msg.Length; i++) m.Add(msg[i] ? 1f : 0f);
-                data.AddRange(m);
-            }
             data.Add(input.CanUseSkill ? 1f : 0f);
             data.Add(input.SkillTimer / input.SkillTimerMaxDuration);
-            data.Add(leaderPos.x - myPos.x);
-            data.Add(leaderPos.y - myPos.y);
+
+            if (settings.EnableLeadership)
+            {
+                foreach (var msg in input.Messages)
+                {
+                    List<float> m = new List<float>();
+                    for (int i = 0; i < msg.Length; i++) m.Add(msg[i] ? 1f : 0f);
+                    data.AddRange(m);
+                }
+                data.Add(leaderPos.x - myPos.x);
+                data.Add(leaderPos.y - myPos.y);
+            }
+
             if (settings.EnableMemory)
             {
                 foreach (var elem in input.Memory)

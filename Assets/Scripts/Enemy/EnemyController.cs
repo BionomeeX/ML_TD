@@ -107,12 +107,20 @@ namespace MLTD.Enemy
             List<Tuple<RaycastOutput, float>> raycasts = new List<Tuple<RaycastOutput, float>>();
             foreach (var dir in _settings.VisionAngles)
             {
-                var hit = Physics2D.Raycast(transform.position + transform.right / 2f, transform.right + transform.up * dir, _settings.VisionSize);
+                var ray = new Ray(transform.position + transform.right / 2f, transform.right + transform.up * dir);
+                var hit = Physics2D.Raycast(ray.origin, ray.direction, _settings.VisionSize);
+                if (_settings.EnableDebug && _settings.VisionDebug.a != 0f)
+                {
+                    Debug.DrawRay(ray.origin, ray.direction.normalized * _settings.VisionSize, _settings.VisionDebug);
+                }
                 RaycastOutput ro = RaycastOutput.NONE;
                 float dist = _settings.VisionSize;
                 if (hit.collider != null)
                 {
-                    Debug.DrawLine(transform.position, hit.point, Color.blue);
+                    if (_settings.EnableDebug && _settings.VisionCollidingDebug.a != 0)
+                    {
+                        Debug.DrawLine(transform.position, hit.point, _settings.VisionCollidingDebug);
+                    }
                     dist = hit.distance;
                     ro = hit.collider.tag switch
                     {
@@ -137,9 +145,9 @@ namespace MLTD.Enemy
             }
 
             // If we have a leader, display debug green line between AI and him
-            if (_leader != null)
+            if (_settings.EnableLeadership && _settings.EnableDebug && _leader != null && _settings.LeadershipDebug.a != 0)
             {
-                Debug.DrawLine(transform.position, _leader.transform.position, Color.green);
+                Debug.DrawLine(transform.position, _leader.transform.position, _settings.LeadershipDebug);
             }
 
             // Data we will send to the neural network
@@ -162,21 +170,25 @@ namespace MLTD.Enemy
                 data.Speed = _rb.velocity.x / _settings.AgentLinearSpeed;
                 data.Direction = _rb.velocity.y / _settings.AgentLinearSpeed;
             }
-            // If we have a leader, the message received is the last one he sent
-            var msgs = new bool[nbMessagesInput][];
-            if (_leader != null)
-            {
-                msgs[0] = _leader._lastMessage;
-            }
-            data.Messages = msgs;
-            for (int i = 0; i < nbMessagesInput; i++)
-            {
-                data.Messages[i] = new bool[messageSize];
-            }
             data.CanUseSkill = false;
             data.SkillTimer = 0f;
             data.SkillTimerMaxDuration = 1f;
-            data.LeaderPosition = _leader == null ? Vector2.zero : (Vector2)_leader.transform.position;
+
+            if (_settings.EnableLeadership)
+            {
+                // If we have a leader, the message received is the last one he sent
+                var msgs = new bool[nbMessagesInput][];
+                if (_leader != null)
+                {
+                    msgs[0] = _leader._lastMessage;
+                }
+                data.Messages = msgs;
+                for (int i = 0; i < nbMessagesInput; i++)
+                {
+                    data.Messages[i] = new bool[messageSize];
+                }
+                data.LeaderPosition = _leader == null ? Vector2.zero : (Vector2)_leader.transform.position;
+            }
 
             if (_settings.EnableMemory)
             {
