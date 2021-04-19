@@ -49,6 +49,14 @@ namespace MLTD.ML
 
         }
 
+        public NN(NN other){
+            this.inputSize = other.inputSize;
+            this.outputs = new List<ADataType>(other.outputs);
+            this.hiddenLayers = new List<int>(other.hiddenLayers);
+            this.weights = new List<Numeric.Matrix>(other.weights);
+        }
+
+
         public int OutputSize()
         {
             int size = 0;

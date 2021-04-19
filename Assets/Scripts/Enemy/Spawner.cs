@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using MLTD.ML;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -46,9 +48,9 @@ namespace MLTD.Enemy
                     _timeRemainding.text = $"Wave end in {timer} seconds";
                     timer--;
                 }
+                ML.GeneticAlgorithm.GeneratePool(_instancied.Select(ec => (ec.Network, ec.gameObject.transform.position.x)), 100);
                 foreach (var p in _instancied)
                 {
-                    p.SetScore(p.gameObject.transform.position.x);
                     Destroy(p.gameObject);
                 }
             }

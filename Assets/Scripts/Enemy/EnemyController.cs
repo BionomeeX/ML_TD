@@ -21,7 +21,7 @@ namespace MLTD.Enemy
 
         private Rigidbody2D _rb;
 
-        private NN _network;
+        public NN Network { private set; get; }
 
         public Vector2 WorldMaxSize { set; private get; }
 
@@ -31,7 +31,7 @@ namespace MLTD.Enemy
         {
             _rb = GetComponent<Rigidbody2D>();
 
-            _network = new NN(
+            Network = new NN(
                 Decision.GetFloatArraySize(_directions.Length, maxMessageSize),
                 new List<ADataType>
                 {
@@ -93,14 +93,9 @@ namespace MLTD.Enemy
             data.SkillTimer = 0f;
             data.SkillTimerMaxDuration = 1f;
 
-            var output = Decision.Decide(data, _network);
+            var output = Decision.Decide(data, Network);
 
             _rb.velocity = new Vector2(output.Speed, output.Direction) * _speed;
-        }
-
-        public void SetScore(float score)
-        {
-            // TODO
         }
     }
 }
