@@ -29,28 +29,14 @@ namespace MLTD.Enemy
 
         public RaycastOutput MyType { private set; get; }
 
+        private Transform _leaderPos;
+
         private void Start()
         {
             _rb = GetComponent<Rigidbody2D>();
-            var rand = UnityEngine.Random.Range(0, 100);
-            if (rand < 5)
-            {
-                MyType = RaycastOutput.ENEMY_LEADER;
-                GetComponent<SpriteRenderer>().color = Color.yellow;
-            }
-            else if (rand < 20)
-            {
-                MyType = RaycastOutput.ENEMY_SHIELD;
-                GetComponent<SpriteRenderer>().color = Color.gray;
-            }
-            else
-            {
-                MyType = RaycastOutput.ENEMY_SCOUT;
-                GetComponent<SpriteRenderer>().color = Color.red;
-            }
         }
 
-        public void Init(NN network)
+        public void Init(NN network, RaycastOutput type)
         {
             Network = network ?? new NN(
                 Decision.GetFloatArraySize(_directions.Length, maxMessageSize),
@@ -62,6 +48,25 @@ namespace MLTD.Enemy
                 },
                 new List<int> { 30 }
                 );
+
+            MyType = type;
+            if (MyType == RaycastOutput.ENEMY_LEADER)
+            {
+                GetComponent<SpriteRenderer>().color = Color.yellow;
+            }
+            else if (MyType == RaycastOutput.ENEMY_SHIELD)
+            {
+                GetComponent<SpriteRenderer>().color = Color.gray;
+            }
+            else
+            {
+                GetComponent<SpriteRenderer>().color = Color.red;
+            }
+        }
+
+        public void SetLeader(Transform leaderPos)
+        {
+            _leaderPos = leaderPos;
         }
 
         private void FixedUpdate()
@@ -76,30 +81,20 @@ namespace MLTD.Enemy
                 {
                     Debug.DrawLine(transform.position, hit.point, Color.blue);
                     dist = hit.distance;
-                    switch (hit.collider.tag)
+                    ro = hit.collider.tag switch
                     {
-                        case "Player":
-                            ro = RaycastOutput.PLAYER;
-                            break;
-
-                        case "Enemy":
-                            ro = hit.collider.GetComponent<EnemyController>().MyType;
-                            break;
-
-                        case "Wall":
-                            ro = RaycastOutput.WALL;
-                            break;
-
-                        case "Turret":
-                            ro = RaycastOutput.TURRET_NORMAL;
-                            break;
-
-                        default:
-                            ro = RaycastOutput.UNKNOWN;
-                            break;
-                    }
+                        "Player" => RaycastOutput.PLAYER,
+                        "Enemy" => hit.collider.GetComponent<EnemyController>().MyType,
+                        "Wall" => RaycastOutput.WALL,
+                        "Turret" => RaycastOutput.TURRET_NORMAL,
+                        _ => RaycastOutput.UNKNOWN,
+                    };
                 }
                 raycasts.Add(new Tuple<RaycastOutput, float>(ro, dist));
+            }
+            if (_leaderPos != null)
+            {
+                Debug.DrawLine(transform.position, _leaderPos.position, Color.green);
             }
 
             InputData data = new InputData();
@@ -113,6 +108,7 @@ namespace MLTD.Enemy
             data.CanUseSkill = false;
             data.SkillTimer = 0f;
             data.SkillTimerMaxDuration = 1f;
+            data.LeaderPosition = _leaderPos?.position ?? Vector2.zero;
 
             var output = Decision.Decide(data, Network);
 
