@@ -48,15 +48,18 @@ namespace MLTD.Enemy
 
         public void Init(NN network, RaycastOutput type, Spawner spawner)
         {
+            List<ADataType> outputTypes = new List<ADataType>();
+            outputTypes.Add(new Range(-1f, 1f));
+            outputTypes.Add(new Range(-1f, 1f));
+            outputTypes.Add(new MLTD.ML.Boolean());
+            for (int i = 0; i < messageSize; i++)
+            {
+                outputTypes.Add(new MLTD.ML.Boolean());
+            }
             _spawner = spawner;
             Network = network ?? new NN(
                 Decision.GetFloatArraySize(_directions.Length, nbMessagesInput, messageSize),
-                new List<ADataType>
-                {
-                    new Range(-1f, 1f),
-                    new Range(-1f, 1f),
-                    new MLTD.ML.Boolean()
-                },
+                outputTypes,
                 new List<int> { 30 }
                 );
 

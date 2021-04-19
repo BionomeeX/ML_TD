@@ -50,6 +50,18 @@ namespace MLTD.ML
             return result;
         }
 
+        public static List<NN> SelectFromOneList(List<(NN network, float score)> lNN, int ngen) {
+            List<NN> result = new List<NN>(ngen);
+
+            for (int i = 0; i < ngen; ++i)
+            {
+                int index = (int)UnityEngine.Random.Range(0, lNN.Count);
+                result.Add(lNN[index].network);
+            }
+            return result;
+        }
+
+
         public static List<NN> GenerateFromTwoList(List<(NN network, float score)> lNN1, List<(NN network, float score)> lNN2, int ngen, float scale) {
             List<NN> result = new List<NN>(ngen);
 
@@ -74,20 +86,22 @@ namespace MLTD.ML
             top = agents_LG.Count > top ? top : agents_LG.Count - 1;
 
             // We sort by score
-
             agents_LG.Sort(delegate
             ((NN network, float score) a, (NN network, float score) b)
             {
                 return b.score.CompareTo(a.score);
             });
 
-            // 30 % of ngenerated will be made with best choice
-            int n30percent = (int)(ngenerated * 0.3);
+            List<(NN network, float score)> tops = agents_LG.Take(top).ToList();
 
-            nns.AddRange(GenerateFromOneList(agents_BoA, n30percent, smallscale));
-            nns.AddRange(GenerateFromOneList(agents_LG.Take(top).ToList(), n30percent, smallscale));
-            nns.AddRange(GenerateFromTwoList(agents_BoA, agents_LG.Take(top).ToList(), n30percent, smallscale));
-            for(int i = 0; i < ngenerated - 3 * n30percent; ++i){
+            // 30 % of ngenerated will be made with best choice
+            int n20percent = (int)(ngenerated * 0.2);
+
+            nns.AddRange(SelectFromOneList(agents_BoA, n20percent));
+            nns.AddRange(SelectFromOneList(tops, n20percent));
+            nns.AddRange(GenerateFromOneList(tops, n20percent, smallscale));
+            nns.AddRange(GenerateFromTwoList(agents_BoA, tops, n20percent, smallscale));
+            for(int i = 0; i < ngenerated - 4 * n20percent; ++i){
                 nns.Add(NN.RandomLike(agents_BoA[0].network));
             }
 

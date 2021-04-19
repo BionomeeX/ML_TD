@@ -6,7 +6,7 @@ TagManager:
   tags:
   - Enemy
   - Wall
-  - Tower
+  - Turret
   layers:
   - Default
   - TransparentFX
@@ -14,7 +14,7 @@ TagManager:
   - 
   - Water
   - UI
-  - 
+  - Enemy
   - 
   - 
   - 
