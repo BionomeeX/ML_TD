@@ -25,7 +25,8 @@ namespace MLTD.Enemy
 
         public Vector2 WorldMaxSize { set; private get; }
 
-        private const int maxMessageSize = 0;
+        private const int nbMessagesInput = 5;
+        private const int messageSize = 10;
 
         public RaycastOutput MyType { private set; get; }
 
@@ -49,7 +50,7 @@ namespace MLTD.Enemy
         {
             _spawner = spawner;
             Network = network ?? new NN(
-                Decision.GetFloatArraySize(_directions.Length, maxMessageSize),
+                Decision.GetFloatArraySize(_directions.Length, nbMessagesInput, messageSize),
                 new List<ADataType>
                 {
                     new Range(-1f, 1f),
@@ -114,7 +115,11 @@ namespace MLTD.Enemy
             data.Speed = _rb.velocity.x / _speed;
             data.RaycastInfos = raycasts.ToArray();
             data.RaycastMaxSize = _directions.Length;
-            data.Messages = new bool[maxMessageSize][];
+            data.Messages = new bool[nbMessagesInput][];
+            for (int i = 0; i < nbMessagesInput; i++)
+            {
+                data.Messages[i] = new bool[messageSize];
+            }
             data.CanUseSkill = false;
             data.SkillTimer = 0f;
             data.SkillTimerMaxDuration = 1f;

@@ -7,7 +7,7 @@ namespace MLTD.ML
 {
     public class Decision
     {
-        public static int GetFloatArraySize(int dirLength, int msgSize)
+        public static int GetFloatArraySize(int dirLength, int nbMessages, int msgSize)
         {
             InputData data = new InputData();
 
@@ -19,7 +19,11 @@ namespace MLTD.ML
             for (int i = 0; i < dirLength; i++)
                 data.RaycastInfos[i] = new Tuple<RaycastOutput, float>(RaycastOutput.NONE, 0f);
             data.RaycastMaxSize = dirLength;
-            data.Messages = new bool[msgSize][];
+            data.Messages = new bool[nbMessages][];
+            for (int i = 0; i < nbMessages; i++)
+            {
+                data.Messages[i] = new bool[msgSize];
+            }
             data.CanUseSkill = false;
             data.SkillTimer = 0f;
             data.SkillTimerMaxDuration = 0f;
