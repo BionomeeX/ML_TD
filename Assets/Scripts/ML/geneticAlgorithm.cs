@@ -1,13 +1,15 @@
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
+using System.Linq;
 
-namespace MLTD.ML {
+namespace MLTD.ML
+{
 
-    public class GeneticAlgorithm {
+    public class GeneticAlgorithm
+    {
 
         // generate from a pool of NN
-        public static List<NN> GeneratePool(List<(NN network, float score)> agents, int ngenerated){
+        public static List<NN> GeneratePool(List<(NN network, float score)> agents, int ngenerated)
+        {
 
             List<NN> nns = new List<NN>(ngenerated);
             int top = 10;
@@ -20,18 +22,21 @@ namespace MLTD.ML {
             // We sort by score
 
             agents.Sort(delegate
-            ((NN network, float score) a, (NN network, float score) b){
+            ((NN network, float score) a, (NN network, float score) b)
+            {
                 return b.score.CompareTo(a.score);
             });
 
             // 80 % of ngenerated will be made with best choice
             int nbest = (int)(ngenerated * 0.8);
 
-            for(int i = 0; i < nbest; ++i){
+            for (int i = 0; i < nbest; ++i)
+            {
                 // select 2 in the top ??
-                int index1 = (int) UnityEngine.Random.Range(0, top + 1);
-                int index2 = (int) UnityEngine.Random.Range(0, top + 1);
-                if(index2 == index1) {
+                int index1 = (int)UnityEngine.Random.Range(0, top + 1);
+                int index2 = (int)UnityEngine.Random.Range(0, top + 1);
+                if (index2 == index1)
+                {
                     index2++;
                 }
 
@@ -39,7 +44,8 @@ namespace MLTD.ML {
 
                 NN newNN1 = new NN(agents[index1].network);
                 NN newNN2 = new NN(agents[index2].network);
-                for(int w = 0; w < newNN1.weights.Count; ++w){
+                for (int w = 0; w < newNN1.weights.Count; ++w)
+                {
                     // weights = alpha * w1 + (1 - alpha) * w2
                     newNN1.weights[w].Multiply(alpha).Add(newNN2.weights[w].Multiply(1f - alpha));
 
@@ -58,10 +64,12 @@ namespace MLTD.ML {
 
 
             // 20 % will be at random with large noise
-            for(int i = 0; i < ngenerated - nbest; ++i){
-                int index1 = (int) UnityEngine.Random.Range(0, agents.Count - 1);
-                int index2 = (int) UnityEngine.Random.Range(0, agents.Count);
-                if(index2 == index1) {
+            for (int i = 0; i < ngenerated - nbest; ++i)
+            {
+                int index1 = (int)UnityEngine.Random.Range(0, agents.Count - 1);
+                int index2 = (int)UnityEngine.Random.Range(0, agents.Count);
+                if (index2 == index1)
+                {
                     index2++;
                 }
 
@@ -69,7 +77,8 @@ namespace MLTD.ML {
 
                 NN newNN1 = new NN(agents[index1].network);
                 NN newNN2 = new NN(agents[index2].network);
-                for(int w = 0; w < newNN1.weights.Count; ++w){
+                for (int w = 0; w < newNN1.weights.Count; ++w)
+                {
                     // weights = alpha * w1 + (1 - alpha) * w2
                     newNN1.weights[w].Multiply(alpha).Add(newNN2.weights[w].Multiply(1f - alpha));
 
