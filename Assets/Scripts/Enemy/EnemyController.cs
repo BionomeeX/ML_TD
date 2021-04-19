@@ -153,12 +153,18 @@ namespace MLTD.Enemy
 
             if (_settings.EnableDebug && MyType == RaycastOutput.ENEMY_LEADER && _settings.LeadershipInfluenceDebug.a != 0f)
             {
-                for (int i = 0; i < 36; i++) // TODO: doesn't work
+                var step = 20f;
+                for (float i = 0; i < 2 * Mathf.PI; i += Mathf.PI / step) // TODO: doesn't work
                 {
-                    Debug.DrawLine((Vector2)transform.position + new Vector2(Mathf.Cos(i * 10f), Mathf.Sin(i * 10f) * _settings.LeadershipMaxDistance),
-                        (Vector2)transform.position + new Vector2(Mathf.Cos((i + 1) * 10f), Mathf.Sin((i + 1) * 10f) * _settings.LeadershipMaxDistance),
+                    var n = i + (Mathf.PI / step);
+                    Debug.DrawLine((Vector2)transform.position + new Vector2(Mathf.Cos(i), Mathf.Sin(i)) * _settings.LeadershipMaxDistance,
+                        (Vector2)transform.position + new Vector2(Mathf.Cos(n), Mathf.Sin(n)) * _settings.LeadershipMaxDistance,
                         _settings.LeadershipInfluenceDebug);
                 }
+                Debug.DrawLine(transform.position - Vector3.right * _settings.LeadershipMaxDistance,
+                    transform.position + Vector3.right * _settings.LeadershipMaxDistance, _settings.LeadershipInfluenceDebug);
+                Debug.DrawLine(transform.position - Vector3.up * _settings.LeadershipMaxDistance,
+                    transform.position + Vector3.up * _settings.LeadershipMaxDistance, _settings.LeadershipInfluenceDebug);
             }
 
             // Data we will send to the neural network

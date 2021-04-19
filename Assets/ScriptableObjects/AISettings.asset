@@ -34,4 +34,4 @@ MonoBehaviour:
   VisionDebug: {r: 0, g: 0, b: 0, a: 0}
   VisionCollidingDebug: {r: 0, g: 0, b: 1, a: 1}
   LeadershipLinkDebug: {r: 0, g: 1, b: 0, a: 1}
-  LeadershipInfluenceDebug: {r: 0, g: 1, b: 0, a: 0.49803922}
+  LeadershipInfluenceDebug: {r: 1, g: 1, b: 0, a: 1}

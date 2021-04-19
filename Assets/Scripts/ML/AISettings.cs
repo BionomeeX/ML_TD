@@ -87,6 +87,6 @@ namespace MLTD.ML
         public Color LeadershipLinkDebug = Color.green;
 
         [Tooltip("Display leadership influence zones")]
-        public Color LeadershipInfluenceDebug = new Color(0f, 1f, 0f, .5f);
+        public Color LeadershipInfluenceDebug = Color.yellow;
     }
 }
