@@ -1,6 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
+using System.Linq;
 
 namespace MLTD.ML {
 
@@ -20,8 +19,8 @@ namespace MLTD.ML {
             // We sort by score
 
             agents.Sort(delegate
-            ((NN network, float score) a, (NN network, float score) b){
-                return a.score.CompareTo(b.score);
+            ((NN network, float score) a, (NN network, float score) b) {
+                return b.score.CompareTo(a.score);
             });
 
             // 80 % of ngenerated will be made with best choice
