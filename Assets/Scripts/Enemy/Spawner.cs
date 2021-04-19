@@ -27,6 +27,7 @@ namespace MLTD.Enemy
 
         private IEnumerator SpawnAll()
         {
+            List<NN> networks = new List<NN>();
             while (true)
             {
                 var maxSize = new Vector2(-transform.position.x + _x, transform.position.y + _y);
@@ -37,6 +38,7 @@ namespace MLTD.Enemy
                         var go = Instantiate(_enemyPrefab, transform.position + new Vector3(x, y), Quaternion.identity);
                         go.transform.parent = transform;
                         var ec = go.GetComponent<EnemyController>();
+                        ec.Init(networks.Count == 0 ? null : new NN(networks[Random.Range(0, networks.Count)]));
                         ec.WorldMaxSize = maxSize;
                         _instancied.Add(ec);
                     }
@@ -48,7 +50,7 @@ namespace MLTD.Enemy
                     _timeRemainding.text = $"Wave end in {timer} seconds";
                     timer--;
                 }
-                ML.GeneticAlgorithm.GeneratePool(_instancied.Select(ec => (ec.Network, ec.gameObject.transform.position.x)), 100);
+                networks = GeneticAlgorithm.GeneratePool(_instancied.Select(ec => (ec.Network, ec.gameObject.transform.position.x)).ToList(), 100);
                 foreach (var p in _instancied)
                 {
                     Destroy(p.gameObject);

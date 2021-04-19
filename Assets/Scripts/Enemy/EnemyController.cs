@@ -30,8 +30,11 @@ namespace MLTD.Enemy
         private void Start()
         {
             _rb = GetComponent<Rigidbody2D>();
+        }
 
-            Network = new NN(
+        public void Init(NN network)
+        {
+            Network = network ?? new NN(
                 Decision.GetFloatArraySize(_directions.Length, maxMessageSize),
                 new List<ADataType>
                 {
