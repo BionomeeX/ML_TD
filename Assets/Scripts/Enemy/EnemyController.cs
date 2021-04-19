@@ -31,13 +31,23 @@ namespace MLTD.Enemy
 
         private Transform _leaderPos;
 
+        public Action<InputData, OutputData> DisplayDebugCallback { set; get; }
+
+        private Spawner _spawner;
+
+        private void OnMouseDown()
+        {
+            _spawner.SetDebug(this);
+        }
+
         private void Start()
         {
             _rb = GetComponent<Rigidbody2D>();
         }
 
-        public void Init(NN network, RaycastOutput type)
+        public void Init(NN network, RaycastOutput type, Spawner spawner)
         {
+            _spawner = spawner;
             Network = network ?? new NN(
                 Decision.GetFloatArraySize(_directions.Length, maxMessageSize),
                 new List<ADataType>
@@ -111,6 +121,8 @@ namespace MLTD.Enemy
             data.LeaderPosition = _leaderPos?.position ?? Vector2.zero;
 
             var output = Decision.Decide(data, Network);
+
+            DisplayDebugCallback?.Invoke(data, output);
 
             _rb.velocity = new Vector2(output.Speed, output.Direction) * _speed;
         }

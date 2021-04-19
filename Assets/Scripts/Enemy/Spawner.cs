@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,6 +16,11 @@ namespace MLTD.Enemy
         [SerializeField]
         private Text _timeRemainding;
 
+        [SerializeField]
+        private GameObject _debugDisplay;
+
+        private Text _debugText;
+
         private List<EnemyController> _instancied = new List<EnemyController>();
 
         private const int _x = 3;
@@ -22,8 +28,11 @@ namespace MLTD.Enemy
 
         private int _waveCount = 1;
 
+        private EnemyController _currentDebugFollowed;
+
         private void Start()
         {
+            _debugDisplay.SetActive(false);
             StartCoroutine(SpawnAll());
         }
 
@@ -32,6 +41,8 @@ namespace MLTD.Enemy
             List<NN> networks = new List<NN>();
             while (true)
             {
+                _currentDebugFollowed = null;
+                _debugDisplay.SetActive(false);
                 var maxSize = new Vector2(-transform.position.x + _x, transform.position.y + _y);
                 List<Transform> leaders = new List<Transform>();
                 for (int x = -_x; x <= _x; x++)
@@ -46,7 +57,7 @@ namespace MLTD.Enemy
                         if (rand < 5) type = RaycastOutput.ENEMY_LEADER;
                         else if (rand < 20) type = RaycastOutput.ENEMY_SHIELD;
                         else type = RaycastOutput.ENEMY_SCOUT;
-                        ec.Init(networks.Count == 0 ? null : new NN(networks[Random.Range(0, networks.Count)]), type);
+                        ec.Init(networks.Count == 0 ? null : new NN(networks[Random.Range(0, networks.Count)]), type, this);
                         if (type == RaycastOutput.ENEMY_LEADER)
                         {
                             leaders.Add(ec.transform);
@@ -63,7 +74,7 @@ namespace MLTD.Enemy
                 while (timer > 0)
                 {
                     yield return new WaitForSeconds(1f);
-                    _timeRemainding.text = $"Wave ${_waveCount} end in {timer} seconds";
+                    _timeRemainding.text = $"Wave {_waveCount} end in {timer} seconds";
                     timer--;
                 }
                 networks = GeneticAlgorithm.GeneratePool(_instancied.Select(ec => (ec.Network, ec.gameObject.transform.position.x)).ToList(), 100);
@@ -86,6 +97,41 @@ namespace MLTD.Enemy
             Gizmos.DrawLine(mid + up + right, mid + up - right);
             Gizmos.DrawLine(mid - up - right, mid + up - right);
             Gizmos.DrawLine(mid - up + right, mid - up - right);
+        }
+
+        private void DisplayDebug(InputData input, OutputData output)
+        {
+            StringBuilder str = new StringBuilder();
+            str.AppendLine("<b>INPUT</b>");
+            str.AppendLine($"Position: ({input.Position.x};{input.Position.y})");
+            str.AppendLine($"Leader Position: ({input.LeaderPosition.x};{input.LeaderPosition.y})");
+            str.AppendLine("Direction: " + input.Direction);
+            str.AppendLine("Speed: " + input.Speed);
+            int i = 1;
+            foreach (var ray in input.RaycastInfos)
+            {
+                str.AppendLine($"Raycast {i}: {ray.Item1} (Distance {ray.Item2})");
+                i++;
+            }
+            str.AppendLine("\n<b>RAW INPUT</b>");
+            str.AppendLine(string.Join(", ", Decision.InputToFloatArray(input)));
+            str.AppendLine("\n<b>OUTPUT</b>");
+            str.AppendLine("Direction: " + output.Direction);
+            str.AppendLine("Speed: " + output.Speed);
+            str.AppendLine("Skill state: " + output.SkillState);
+            str.AppendLine("Message: " + string.Join("", output.Message.Select(x => x ? "1" : "0")));
+        }
+
+        public void SetDebug(EnemyController ec)
+        {
+            if (_currentDebugFollowed != null)
+            {
+                _currentDebugFollowed.DisplayDebugCallback = null;
+            }
+            ec.DisplayDebugCallback = DisplayDebug;
+            _currentDebugFollowed = ec;
+            _debugDisplay.SetActive(true);
+            _debugText = _debugDisplay.GetComponentInChildren<Text>();
         }
     }
 }
