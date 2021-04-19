@@ -55,6 +55,7 @@ namespace MLTD.Enemy
                 {
                     Destroy(p.gameObject);
                 }
+                _instancied.RemoveAll(x => true);
             }
         }
 
