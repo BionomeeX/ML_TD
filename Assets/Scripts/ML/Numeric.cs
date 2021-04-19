@@ -1,3 +1,4 @@
+using System.IO;
 using UnityEngine;
 
 namespace MLTD.ML
@@ -41,6 +42,28 @@ namespace MLTD.ML
             public float[] data;
             public int nline;
             public int ncolumn;
+
+            public void Write(BinaryWriter writer)
+            {
+                writer.Write(nline);
+                writer.Write(ncolumn);
+                foreach (float value in data)
+                {
+                    writer.Write(value);
+                }
+            }
+
+            public static Matrix Read(BinaryReader reader)
+            {
+                int nline = reader.ReadInt32();
+                int ncol = reader.ReadInt32();
+                Matrix result = new Matrix(nline, ncol);
+                for (int i = 0; i < nline * ncol; ++i)
+                {
+                    result.data[i] = reader.ReadSingle();
+                }
+                return result;
+            }
 
             public Matrix(int nline, int ncol)
             {
