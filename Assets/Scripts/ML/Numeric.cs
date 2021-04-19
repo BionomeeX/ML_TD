@@ -13,22 +13,25 @@ namespace MLTD.ML
             public Vector(int size)
             {
                 this.size = size;
-                data = new float[size];
+                this.data = new float[size];
+                // for(int i = 0; i <size; ++i){
+                //     this.data[i] = 0f;
+                // }
             }
 
             public float At(int index)
             {
-                return data[index];
+                return this.data[index];
             }
 
             public void At(int index, float value)
             {
-                data[index] = value;
+                this.data[index] = value;
             }
 
             public void UpdateAt(int index, float value)
             {
-                data[index] += value;
+                this.data[index] += value;
             }
 
         }
@@ -48,6 +51,9 @@ namespace MLTD.ML
 
             public float At(int indexLine, int indexColumn)
             {
+                // if(float.IsNaN(data[indexLine * ncolumn + indexColumn])) {
+                //     Debug.Log("?? : " + data[indexLine * ncolumn + indexColumn]);
+                // }
                 return data[indexLine * ncolumn + indexColumn];
             }
 
@@ -62,10 +68,14 @@ namespace MLTD.ML
 
             public void Randomize()
             {
-                float limit = Mathf.Sqrt(6 / (ncolumn + nline));
+                float limit = Mathf.Sqrt(6f / (this.ncolumn + this.nline));
+                // Debug.Log("limit : " + limit);
                 for (int i = 0; i < nline * ncolumn; ++i)
                 {
-                    data[i] = RandomGaussian(-limit, +limit); //Random.Range(-1f, 1f);
+                    // float val = RandomGaussian(-limit, +limit);
+                    float val = Random.Range(-limit, +limit);
+                    this.data[i] =  val;
+                    // Debug.Log("Random val : " + val);
                 }
             }
 
@@ -102,6 +112,23 @@ namespace MLTD.ML
             return result;
         }
 
+        public static Vector MatMultBias(Matrix m, Vector v)
+            {
+                Vector result = new Vector(m.nline);
+                for (int line = 0; line < m.nline; ++line)
+                {
+                    for (int col = 0; col < m.ncolumn - 1; ++col)
+                    {
+                        // Debug.Log("" + m.At(line, col) + " * " + v.At(col) + " = " + m.At(line, col) * v.At(col));
+                        float val = m.At(line, col) * v.At(col);
+                        result.UpdateAt(line, val);
+                    }
+                    result.UpdateAt(line, m.At(line, m.ncolumn - 1) * 1f);
+                    // Debug.Log("result at " + line + " = " + result.At(line));
+                }
+                return result;
+            }
+
         public static Vector SoftMax(Vector v)
         {
             Vector result = new Vector(v.size);
@@ -126,8 +153,8 @@ namespace MLTD.ML
             Vector result = new Vector(v.size);
             for (int i = 0; i < v.size; ++i)
             {
-                Debug.Log("v at " + i + " " + v.At(i));
-                result.At(i, min + (max - min) / (1 + Mathf.Exp(-v.At(i))));
+                // Debug.Log("v at " + i + " " + v.At(i) + " -> " + Mathf.Exp(-v.At(i)) + " ( " + min + ", " + max +") => " + (min + (max - min) / (1f + Mathf.Exp(-v.At(i)))));
+                result.At(i, min + (max - min) / (1f + Mathf.Exp(-v.At(i))));
             }
             return result;
         }
