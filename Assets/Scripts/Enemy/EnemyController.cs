@@ -7,6 +7,7 @@ namespace MLTD.Enemy
 {
     public class EnemyController : MonoBehaviour
     {
+        // Directions of the raycast done by the AI to get information
         private readonly Vector2[] _directions = new[]
         {
             new Vector2(1f, .1f).normalized,
@@ -16,6 +17,7 @@ namespace MLTD.Enemy
             new Vector2(1f, -.2f).normalized
         };
 
+        // Constant variable for AI movements
         private const float _distance = 20f;
         private const float _speed = 5f;
 
@@ -23,21 +25,33 @@ namespace MLTD.Enemy
 
         public NN Network { private set; get; }
 
+        // Size max of the world, used to put AI position between -1 and 1
         public Vector2 WorldMaxSize { set; private get; }
 
+        // Constants for messages sent/received
+        // Number max of message sent by an AI
         private const int nbMessagesInput = 5;
+        // Size of a message sent
         private const int messageSize = 10;
 
+        // Type of the AI, must be ENEMY_*
         public RaycastOutput MyType { private set; get; }
 
+        // Leader of the current AI, null if none
         private EnemyController _leader;
 
+        // Function we send debug info to
         public Action<InputData, OutputData> DisplayDebugCallback { set; get; }
 
+        // Keep track of the spawner that instanciated us
         private Spawner _spawner;
 
+        // Last message we generated from the neural network
         private bool[] _lastMessage = new bool[messageSize];
 
+        /// <summary>
+        /// When clicking on an AI, we begin to track its debug info
+        /// </summary>
         private void OnMouseDown()
         {
             _spawner.SetDebug(this);
@@ -50,21 +64,27 @@ namespace MLTD.Enemy
 
         public void Init(NN network, RaycastOutput type, Spawner spawner)
         {
-            List<ADataType> outputTypes = new List<ADataType>();
-            outputTypes.Add(new Range(-1f, 1f));
-            outputTypes.Add(new Range(-1f, 1f));
-            outputTypes.Add(new MLTD.ML.Boolean());
+            _spawner = spawner;
+
+            // Setup the output types for the neural network
+            List<ADataType> outputTypes = new List<ADataType>
+            {
+                new Range(-1f, 1f),
+                new Range(-1f, 1f),
+                new ML.Boolean()
+            };
             for (int i = 0; i < messageSize; i++)
             {
-                outputTypes.Add(new MLTD.ML.Boolean());
+                outputTypes.Add(new ML.Boolean());
             }
-            _spawner = spawner;
+            // Setup the neural network, if none provided, we create a new one that will contains random values
             Network = network ?? new NN(
                 Decision.GetFloatArraySize(_directions.Length, nbMessagesInput, messageSize),
                 outputTypes,
                 new List<int> { 30 }
                 );
 
+            // Set the color of an AI depending of its type
             MyType = type;
             if (MyType == RaycastOutput.ENEMY_LEADER)
             {
@@ -87,6 +107,7 @@ namespace MLTD.Enemy
 
         private void FixedUpdate()
         {
+            // Fire raycasts and get info from each of them
             List<Tuple<RaycastOutput, float>> raycasts = new List<Tuple<RaycastOutput, float>>();
             foreach (var dir in _directions)
             {
@@ -108,18 +129,24 @@ namespace MLTD.Enemy
                 }
                 raycasts.Add(new Tuple<RaycastOutput, float>(ro, dist));
             }
+
+            // If we have a leader, display debug green line between AI and him
             if (_leader != null)
             {
                 Debug.DrawLine(transform.position, _leader.transform.position, Color.green);
             }
 
-            InputData data = new InputData();
-            data.WorldSize = WorldMaxSize;
-            data.Position = transform.position;
-            data.Direction = _rb.velocity.y / _speed;
-            data.Speed = _rb.velocity.x / _speed;
-            data.RaycastInfos = raycasts.ToArray();
-            data.RaycastMaxSize = _directions.Length;
+            // Data we will send to the neural network
+            var data = new InputData
+            {
+                WorldSize = WorldMaxSize,
+                Position = transform.position,
+                Direction = _rb.velocity.y / _speed,
+                Speed = _rb.velocity.x / _speed,
+                RaycastInfos = raycasts.ToArray(),
+                RaycastMaxSize = _directions.Length
+            };
+            // If we have a leader, the message received is the last one he sent
             var msgs = new bool[nbMessagesInput][];
             if (_leader != null)
             {
@@ -135,10 +162,13 @@ namespace MLTD.Enemy
             data.SkillTimerMaxDuration = 1f;
             data.LeaderPosition = _leader == null ? Vector2.zero : (Vector2)_leader.transform.position;
 
+            // Call to neural network
             var output = Decision.Decide(data, Network);
 
+            // If a debug callback is set, we use it
             DisplayDebugCallback?.Invoke(data, output);
 
+            // Use info returned by neural network
             _rb.velocity = new Vector2(output.Speed, output.Direction) * _speed;
             _lastMessage = output.Message;
         }
