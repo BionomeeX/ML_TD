@@ -79,6 +79,22 @@ namespace MLTD.ML
                 }
             }
 
+            public Matrix Multiply(float value) {
+                for (int i = 0; i < nline * ncolumn; ++i)
+                {
+                    this.data[i] *= value;
+                }
+                return this;
+            }
+
+            public Matrix Add(Matrix m) {
+                for (int i = 0; i < nline * ncolumn; ++i)
+                {
+                    this.data[i] += m.data[i];
+                }
+                return this;
+            }
+
         }
 
         public static Matrix MatMult(Matrix m1, Matrix m2)
