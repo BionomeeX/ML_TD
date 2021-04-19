@@ -8,7 +8,7 @@ namespace MLTD.ML
     public class Decision
     {
         // Get the size of a request to the neural network
-        public static int GetFloatArraySize(int dirLength, int nbMessages, int msgSize)
+        public static int GetFloatArraySize(AISettings settings, int nbMessages, int msgSize)
         {
             InputData data = new InputData();
 
@@ -16,10 +16,10 @@ namespace MLTD.ML
             data.Position = Vector2.one;
             data.Direction = 1f;
             data.Speed = 1f;
-            data.RaycastInfos = new Tuple<RaycastOutput, float>[dirLength];
-            for (int i = 0; i < dirLength; i++)
+            data.RaycastInfos = new Tuple<RaycastOutput, float>[settings.VisionAngles.Length];
+            for (int i = 0; i < settings.VisionAngles.Length; i++)
                 data.RaycastInfos[i] = new Tuple<RaycastOutput, float>(RaycastOutput.NONE, 0f);
-            data.RaycastMaxSize = dirLength;
+            data.RaycastMaxSize = settings.VisionAngles.Length;
             data.Messages = new bool[nbMessages][];
             for (int i = 0; i < nbMessages; i++)
             {
@@ -30,11 +30,18 @@ namespace MLTD.ML
             data.SkillTimerMaxDuration = 0f;
             data.LeaderPosition = Vector2.one;
 
-            return InputToFloatArray(data).Length;
+            if (settings.EnableMemory)
+            {
+                data.Memory = new Tuple<RaycastOutput, Vector2>[settings.MemorySize];
+                for (int i = 0; i < settings.MemorySize; i++)
+                    data.Memory[i] = new Tuple<RaycastOutput, Vector2>(RaycastOutput.NONE, Vector2.zero);
+            }
+
+            return InputToFloatArray(settings, data).Length;
         }
 
         // Input structure to float array for the neural network
-        public static float[] InputToFloatArray(InputData input)
+        public static float[] InputToFloatArray(AISettings settings, InputData input)
         {
             List<float> data = new List<float>();
             var myPos = new Vector2(input.Position.x / input.WorldSize.x, input.Position.y / input.WorldSize.y);
@@ -61,6 +68,18 @@ namespace MLTD.ML
             data.Add(input.SkillTimer / input.SkillTimerMaxDuration);
             data.Add(leaderPos.x - myPos.x);
             data.Add(leaderPos.y - myPos.y);
+            if (settings.EnableMemory)
+            {
+                foreach (var elem in input.Memory)
+                {
+                    var max = Enum.GetValues(typeof(RaycastOutput)).Cast<int>().Max() + 1;
+                    List<float> elems = new List<float>();
+                    for (int i = 0; i < max * 2; i++) elems.Add(0f);
+                    elems[(int)elem.Item1 * 2] = elem.Item2.x;
+                    elems[(int)elem.Item1 * 2 + 1] = elem.Item2.y;
+                    data.AddRange(elems);
+                }
+            }
             return data.ToArray();
         }
 
@@ -78,9 +97,9 @@ namespace MLTD.ML
         }
 
         // Call to the neural network
-        public static OutputData Decide(InputData input, NN neuralNet)
+        public static OutputData Decide(AISettings settings, InputData input, NN neuralNet)
         {
-            var iFloat = InputToFloatArray(input);
+            var iFloat = InputToFloatArray(settings, input);
 
             return FloatArrayToOutput(neuralNet.Forward(iFloat));
         }

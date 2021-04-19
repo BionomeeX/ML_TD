@@ -24,6 +24,9 @@ namespace MLTD.Enemy
         private Text _debugText;
         private bool _isDebugSetManually = false;
 
+        [SerializeField]
+        private AISettings _settings;
+
         private const float _waveLength = 15f;
 
         // List of all instanciated ennemies
@@ -88,7 +91,7 @@ namespace MLTD.Enemy
                         if (rand < 5) type = RaycastOutput.ENEMY_LEADER;
                         else if (rand < 20) type = RaycastOutput.ENEMY_SHIELD;
                         else type = RaycastOutput.ENEMY_SCOUT;
-                        ec.Init(networks.Count == 0 ? null : new NN(networks[count]), type, this);
+                        ec.Init(networks.Count == 0 ? null : new NN(networks[count]), type, this, _settings);
                         ec.WorldMaxSize = maxSize;
                         ec.name = "AI " + count;
 
@@ -121,7 +124,7 @@ namespace MLTD.Enemy
                 }
 
                 // Keep best AI and setup new neural networks for next generation
-                List<(NN network, float score)> oldgen = _instancied.Select(ec => (ec.Network, ec.gameObject.transform.position.x)).ToList();
+                List<(NN network, float score)> oldgen = _instancied.Select(ec => (ec.Network, ec.gameObject.transform.position.x - ec.MalusScore)).ToList();
                 networks_BestOf.AddRange(oldgen);
                 networks_BestOf.Sort(delegate
                 ((NN network, float score) a, (NN network, float score) b)
@@ -198,8 +201,17 @@ namespace MLTD.Enemy
                 str.AppendLine($"Raycast {i}: {ray.Item1} (Distance {ray.Item2:0.00})");
                 i++;
             }
+            if (_settings.EnableMemory)
+            {
+                i = 1;
+                foreach (var ray in input.Memory)
+                {
+                    str.AppendLine($"Memory raycast {i}: {ray.Item1} at position ({ray.Item2.x:0.00};{ray.Item2.y:0.00})");
+                    i++;
+                }
+            }
             str.AppendLine("\n<b>RAW INPUT</b>");
-            str.AppendLine(string.Join(", ", Decision.InputToFloatArray(input).Select(x => x.ToString("0.00"))));
+            str.AppendLine(string.Join(", ", Decision.InputToFloatArray(_settings, input).Select(x => x.ToString("0.00"))));
             str.AppendLine("\n<b>OUTPUT</b>");
             str.AppendLine($"Direction: {output.Direction:0.00}");
             str.AppendLine($"Speed: {output.Speed:0.00}");

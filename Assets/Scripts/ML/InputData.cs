@@ -20,5 +20,7 @@ namespace MLTD.ML
         public float SkillTimerMaxDuration;
 
         public Vector2 LeaderPosition;
+
+        public Tuple<RaycastOutput, Vector2>[] Memory;
     }
 }

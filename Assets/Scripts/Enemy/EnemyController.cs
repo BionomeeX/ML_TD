@@ -7,20 +7,7 @@ namespace MLTD.Enemy
 {
     public class EnemyController : MonoBehaviour
     {
-        // Directions of the raycast done by the AI to get information
-        private readonly float[] _directions = new[]
-        {
-            .1f,
-            .2f,
-            0f,
-            -.1f,
-            -.2f
-        };
-
-        // Constant variable for AI movements
-        private const float _distance = 20f;
-        private const float _speed = 5f;
-        private const float _angularSpeed = 10f;
+        private AISettings _settings;
 
         private Rigidbody2D _rb;
 
@@ -34,6 +21,8 @@ namespace MLTD.Enemy
         private const int nbMessagesInput = 5;
         // Size of a message sent
         private const int messageSize = 10;
+
+        private List<Tuple<RaycastOutput, Vector2>> _memory = new List<Tuple<RaycastOutput, Vector2>>();
 
         // Type of the AI, must be ENEMY_*
         public RaycastOutput MyType { private set; get; }
@@ -49,6 +38,10 @@ namespace MLTD.Enemy
 
         // Last message we generated from the neural network
         private bool[] _lastMessage = new bool[messageSize];
+        private int _lastMessageKept = 0;
+
+        // Value to remove to the score calculated for the neural network performance
+        public float MalusScore { private set; get; }
 
         /// <summary>
         /// When clicking on an AI, we begin to track its debug info
@@ -63,9 +56,10 @@ namespace MLTD.Enemy
             _rb = GetComponent<Rigidbody2D>();
         }
 
-        public void Init(NN network, RaycastOutput type, Spawner spawner)
+        public void Init(NN network, RaycastOutput type, Spawner spawner, AISettings settings)
         {
             _spawner = spawner;
+            _settings = settings;
 
             // Setup the output types for the neural network
             List<ADataType> outputTypes = new List<ADataType>
@@ -80,7 +74,7 @@ namespace MLTD.Enemy
             }
             // Setup the neural network, if none provided, we create a new one that will contains random values
             Network = network ?? new NN(
-                Decision.GetFloatArraySize(_directions.Length, nbMessagesInput, messageSize),
+                Decision.GetFloatArraySize(_settings, nbMessagesInput, messageSize),
                 outputTypes,
                 new List<int> { 30 }
                 );
@@ -108,13 +102,14 @@ namespace MLTD.Enemy
 
         private void FixedUpdate()
         {
+            _lastMessageKept++;
             // Fire raycasts and get info from each of them
             List<Tuple<RaycastOutput, float>> raycasts = new List<Tuple<RaycastOutput, float>>();
-            foreach (var dir in _directions)
+            foreach (var dir in _settings.VisionAngles)
             {
-                var hit = Physics2D.Raycast(transform.position + transform.right / 2f, transform.right + transform.up * dir, _distance);
+                var hit = Physics2D.Raycast(transform.position + transform.right / 2f, transform.right + transform.up * dir, _settings.VisionSize);
                 RaycastOutput ro = RaycastOutput.NONE;
-                float dist = _distance;
+                float dist = _settings.VisionSize;
                 if (hit.collider != null)
                 {
                     Debug.DrawLine(transform.position, hit.point, Color.blue);
@@ -129,6 +124,16 @@ namespace MLTD.Enemy
                     };
                 }
                 raycasts.Add(new Tuple<RaycastOutput, float>(ro, dist));
+                if (_settings.EnableMemory && dir == 0f && _lastMessageKept >= _settings.TimeBetweenMemoryAcquisition * 50f) // FixedUpdate is called every 0.02 seconds by default
+                {
+                    _lastMessageKept = 0;
+                    var mData = new Tuple<RaycastOutput, Vector2>(ro, hit.point);
+                    if (_memory.Count == _settings.MemorySize)
+                    {
+                        _memory.RemoveAt(0);
+                    }
+                    _memory.Add(mData);
+                }
             }
 
             // If we have a leader, display debug green line between AI and him
@@ -142,11 +147,21 @@ namespace MLTD.Enemy
             {
                 WorldSize = WorldMaxSize,
                 Position = transform.position,
-                Direction = transform.rotation.eulerAngles.z / 360f,
-                Speed = _rb.velocity.magnitude / _speed,
                 RaycastInfos = raycasts.ToArray(),
-                RaycastMaxSize = _directions.Length
+                RaycastMaxSize = _settings.VisionAngles.Length
             };
+            // When using rotation, speed is velocity magnitude and direction our angle
+            // Else speed is velocity on X axis and direction the one on Y
+            if (_settings.ReplaceStrafeByRotation)
+            {
+                data.Speed = _rb.velocity.magnitude / _settings.AgentLinearSpeed;
+                data.Direction = transform.rotation.eulerAngles.z / 360f;
+            }
+            else
+            {
+                data.Speed = _rb.velocity.x / _settings.AgentLinearSpeed;
+                data.Direction = _rb.velocity.y / _settings.AgentLinearSpeed;
+            }
             // If we have a leader, the message received is the last one he sent
             var msgs = new bool[nbMessagesInput][];
             if (_leader != null)
@@ -163,16 +178,46 @@ namespace MLTD.Enemy
             data.SkillTimerMaxDuration = 1f;
             data.LeaderPosition = _leader == null ? Vector2.zero : (Vector2)_leader.transform.position;
 
+            if (_settings.EnableMemory)
+            {
+                var dataMemory = new List<Tuple<RaycastOutput, Vector2>>(_memory);
+                for (int i = dataMemory.Count; i < _settings.MemorySize; i++)
+                {
+                    dataMemory.Add(new Tuple<RaycastOutput, Vector2>(RaycastOutput.NONE, Vector2.zero));
+                }
+                data.Memory = dataMemory.ToArray();
+            }
+
             // Call to neural network
-            var output = Decision.Decide(data, Network);
+            var output = Decision.Decide(_settings, data, Network);
 
             // If a debug callback is set, we use it
             DisplayDebugCallback?.Invoke(this, data, output);
 
             // Use info returned by neural network
-            _rb.AddForce(transform.right * output.Speed * _speed);
-            transform.Rotate(new Vector3(0f, 0f, output.Direction * _angularSpeed));
-            _rb.velocity = Vector2.ClampMagnitude(_rb.velocity, _speed);
+            Vector2 forceUsed;
+            // When rotating, we rotate the AI with angular speed then go forward by linear speed
+            // Else we just move by speed and direction on the corresponding axises
+            if (_settings.ReplaceStrafeByRotation)
+            {
+                forceUsed = transform.right * output.Speed * _settings.AgentLinearSpeed;
+                transform.Rotate(new Vector3(0f, 0f, output.Direction * _settings.AgentLinearSpeed));
+            }
+            else
+            {
+                forceUsed = transform.right * output.Speed * _settings.AgentLinearSpeed
+                        + transform.up * output.Direction * _settings.AgentLinearSpeed;
+            }
+            // If we smoothen the movements, we add it add force, else we just set the velocity
+            if (_settings.SmoothenMovements)
+            {
+                _rb.AddForce(forceUsed);
+            }
+            else
+            {
+                _rb.velocity = forceUsed;
+            }
+            _rb.velocity = Vector2.ClampMagnitude(_rb.velocity, _settings.AgentLinearSpeed);
             _lastMessage = output.Message;
         }
 
