@@ -21,7 +21,7 @@ namespace MLTD.ML {
 
             agents.Sort(delegate
             ((NN network, float score) a, (NN network, float score) b){
-                return a.score.CompareTo(b.score);
+                return b.score.CompareTo(a.score);
             });
 
             // 80 % of ngenerated will be made with best choice
@@ -49,6 +49,8 @@ namespace MLTD.ML {
 
                     // w1 += small random noise
                     newNN1.weights[w].Add(newNN2.weights[w]);
+
+                    newNN1.weights[w].ScaleByLine();
                 }
 
                 nns.Add(newNN1);
@@ -77,6 +79,8 @@ namespace MLTD.ML {
 
                     // w1 += small random noise
                     newNN1.weights[w].Add(newNN2.weights[w]);
+
+                    newNN1.weights[w].ScaleByLine();
                 }
 
                 nns.Add(newNN1);
