@@ -26,10 +26,12 @@ MonoBehaviour:
   EnableAICollision: 0
   EnableLeadership: 1
   LeadershipChance: 5
+  LeadershipMaxDistance: 15
   EnableMemory: 0
   MemorySize: 5
   TimeBetweenMemoryAcquisition: 2
   EnableDebug: 1
   VisionDebug: {r: 0, g: 0, b: 0, a: 0}
   VisionCollidingDebug: {r: 0, g: 0, b: 1, a: 1}
-  LeadershipDebug: {r: 0, g: 1, b: 0, a: 1}
+  LeadershipLinkDebug: {r: 0, g: 1, b: 0, a: 1}
+  LeadershipInfluenceDebug: {r: 0, g: 1, b: 0, a: 0.49803922}

@@ -53,6 +53,10 @@ namespace MLTD.ML
         [Range(1, 100)]
         public int LeadershipChance = 5;
 
+        [Tooltip("Maximum distance allowed before the AI will loose its leader information, -1 to disable")]
+        [Range(-1, 30)]
+        public float LeadershipMaxDistance = 15f;
+
 
         [Header("Memory settings")]
 
@@ -80,6 +84,9 @@ namespace MLTD.ML
         public Color VisionCollidingDebug = Color.blue;
 
         [Tooltip("Display connections between leader and subalternes")]
-        public Color LeadershipDebug = Color.green;
+        public Color LeadershipLinkDebug = Color.green;
+
+        [Tooltip("Display leadership influence zones")]
+        public Color LeadershipInfluenceDebug = new Color(0f, 1f, 0f, .5f);
     }
 }

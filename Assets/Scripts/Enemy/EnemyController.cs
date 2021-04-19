@@ -145,9 +145,20 @@ namespace MLTD.Enemy
             }
 
             // If we have a leader, display debug green line between AI and him
-            if (_settings.EnableLeadership && _settings.EnableDebug && _leader != null && _settings.LeadershipDebug.a != 0)
+            if (_settings.EnableLeadership && _settings.EnableDebug && _leader != null && _settings.LeadershipLinkDebug.a != 0
+                && (_settings.LeadershipMaxDistance < 0f || Vector2.Distance(transform.position, _leader.transform.position) < _settings.LeadershipMaxDistance))
             {
-                Debug.DrawLine(transform.position, _leader.transform.position, _settings.LeadershipDebug);
+                Debug.DrawLine(transform.position, _leader.transform.position, _settings.LeadershipLinkDebug);
+            }
+
+            if (_settings.EnableDebug && MyType == RaycastOutput.ENEMY_LEADER && _settings.LeadershipInfluenceDebug.a != 0f)
+            {
+                for (int i = 0; i < 36; i++) // TODO: doesn't work
+                {
+                    Debug.DrawLine((Vector2)transform.position + new Vector2(Mathf.Cos(i * 10f), Mathf.Sin(i * 10f) * _settings.LeadershipMaxDistance),
+                        (Vector2)transform.position + new Vector2(Mathf.Cos((i + 1) * 10f), Mathf.Sin((i + 1) * 10f) * _settings.LeadershipMaxDistance),
+                        _settings.LeadershipInfluenceDebug);
+                }
             }
 
             // Data we will send to the neural network
@@ -176,9 +187,12 @@ namespace MLTD.Enemy
 
             if (_settings.EnableLeadership)
             {
+                var canCommunicateWithLeader = _leader != null &&
+                    (_settings.LeadershipMaxDistance < 0f || Vector2.Distance(transform.position, _leader.transform.position) < _settings.LeadershipMaxDistance);
+
                 // If we have a leader, the message received is the last one he sent
                 var msgs = new bool[nbMessagesInput][];
-                if (_leader != null)
+                if (_leader != null && canCommunicateWithLeader)
                 {
                     msgs[0] = _leader._lastMessage;
                 }
@@ -187,7 +201,7 @@ namespace MLTD.Enemy
                 {
                     data.Messages[i] = new bool[messageSize];
                 }
-                data.LeaderPosition = _leader == null ? Vector2.zero : (Vector2)_leader.transform.position;
+                data.LeaderPosition = _leader == null || !canCommunicateWithLeader ? Vector2.zero : (Vector2)_leader.transform.position;
             }
 
             if (_settings.EnableMemory)
@@ -204,7 +218,10 @@ namespace MLTD.Enemy
             var output = Decision.Decide(_settings, data, Network);
 
             // If a debug callback is set, we use it
-            DisplayDebugCallback?.Invoke(this, data, output);
+            if (_settings.EnableDebug)
+            {
+                DisplayDebugCallback?.Invoke(this, data, output);
+            }
 
             // Use info returned by neural network
             Vector2 forceUsed;
@@ -231,6 +248,10 @@ namespace MLTD.Enemy
             }
             _rb.velocity = Vector2.ClampMagnitude(_rb.velocity, _settings.AgentLinearSpeed);
             _lastMessage = output.Message;
+        }
+
+        public void OnDrawGizmos()
+        {
         }
 
         public Vector2 GetVelocity()

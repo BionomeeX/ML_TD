@@ -49,7 +49,7 @@ namespace MLTD.Enemy
                 _debugDisplay = null;
             }
             int enemyLayerCollision = 6;
-            Physics2D.IgnoreLayerCollision(6, 6, !_settings.EnableAICollision);
+            Physics2D.IgnoreLayerCollision(enemyLayerCollision, enemyLayerCollision, !_settings.EnableAICollision);
             StartCoroutine(SpawnAll());
             if (_debugDisplay != null)
             {
