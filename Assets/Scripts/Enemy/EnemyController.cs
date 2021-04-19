@@ -30,11 +30,13 @@ namespace MLTD.Enemy
 
         public RaycastOutput MyType { private set; get; }
 
-        private Transform _leaderPos;
+        private EnemyController _leader;
 
         public Action<InputData, OutputData> DisplayDebugCallback { set; get; }
 
         private Spawner _spawner;
+
+        private bool[] _lastMessage = new bool[messageSize];
 
         private void OnMouseDown()
         {
@@ -78,9 +80,9 @@ namespace MLTD.Enemy
             }
         }
 
-        public void SetLeader(Transform leaderPos)
+        public void SetLeader(EnemyController leader)
         {
-            _leaderPos = leaderPos;
+            _leader = leader;
         }
 
         private void FixedUpdate()
@@ -106,9 +108,9 @@ namespace MLTD.Enemy
                 }
                 raycasts.Add(new Tuple<RaycastOutput, float>(ro, dist));
             }
-            if (_leaderPos != null)
+            if (_leader != null)
             {
-                Debug.DrawLine(transform.position, _leaderPos.position, Color.green);
+                Debug.DrawLine(transform.position, _leader.transform.position, Color.green);
             }
 
             InputData data = new InputData();
@@ -118,7 +120,12 @@ namespace MLTD.Enemy
             data.Speed = _rb.velocity.x / _speed;
             data.RaycastInfos = raycasts.ToArray();
             data.RaycastMaxSize = _directions.Length;
-            data.Messages = new bool[nbMessagesInput][];
+            var msgs = new bool[nbMessagesInput][];
+            if (_leader != null)
+            {
+                msgs[0] = _leader._lastMessage;
+            }
+            data.Messages = msgs;
             for (int i = 0; i < nbMessagesInput; i++)
             {
                 data.Messages[i] = new bool[messageSize];
@@ -126,13 +133,14 @@ namespace MLTD.Enemy
             data.CanUseSkill = false;
             data.SkillTimer = 0f;
             data.SkillTimerMaxDuration = 1f;
-            data.LeaderPosition = _leaderPos?.position ?? Vector2.zero;
+            data.LeaderPosition = _leader == null ? Vector2.zero : (Vector2)_leader.transform.position;
 
             var output = Decision.Decide(data, Network);
 
             DisplayDebugCallback?.Invoke(data, output);
 
             _rb.velocity = new Vector2(output.Speed, output.Direction) * _speed;
+            _lastMessage = output.Message;
         }
     }
 }

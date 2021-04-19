@@ -48,7 +48,7 @@ namespace MLTD.Enemy
                 _debugDisplay.SetActive(false);
                 var maxSize = new Vector2(-transform.position.x + _x, transform.position.y + _y);
                 int count = 0;
-                List<Transform> leaders = new List<Transform>();
+                List<EnemyController> leaders = new List<EnemyController>();
                 for (int x = -_x; x <= _x; x++)
                 {
                     for (int y = -_y; y <= _y; y++)
@@ -64,7 +64,7 @@ namespace MLTD.Enemy
                         ec.Init(networks.Count == 0 ? null : new NN(networks[count]), type, this);
                         if (type == RaycastOutput.ENEMY_LEADER)
                         {
-                            leaders.Add(ec.transform);
+                            leaders.Add(ec);
                         }
                         ec.WorldMaxSize = maxSize;
                         _instancied.Add(ec);
