@@ -169,7 +169,8 @@ namespace MLTD.Enemy
             DisplayDebugCallback?.Invoke(data, output);
 
             // Use info returned by neural network
-            _rb.velocity = new Vector2(output.Speed, output.Direction) * _speed;
+            _rb.AddForce(new Vector2(output.Speed, output.Direction) * _speed);
+            _rb.velocity = Vector2.ClampMagnitude(_rb.velocity, 1f);
             _lastMessage = output.Message;
         }
     }
