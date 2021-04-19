@@ -93,5 +93,10 @@ namespace MLTD.Enemy
 
             _rb.velocity = new Vector2(output.Speed, output.Direction) * _speed;
         }
+
+        public void SetScore(float score)
+        {
+            // TODO
+        }
     }
 }

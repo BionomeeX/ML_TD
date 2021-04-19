@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace MLTD.Enemy
 {
@@ -8,27 +10,46 @@ namespace MLTD.Enemy
         [SerializeField]
         private GameObject _enemyPrefab;
 
-        private List<GameObject> _instancied = new List<GameObject>();
+        [SerializeField]
+        private Text _timeRemainding;
+
+        private List<EnemyController> _instancied = new List<EnemyController>();
 
         private const int _x = 3;
         private const int _y = 5;
 
         private void Start()
         {
-            SpawnAll();
+            StartCoroutine(SpawnAll());
         }
 
-        private void SpawnAll()
+        private IEnumerator SpawnAll()
         {
-            var maxSize = new Vector2(-transform.position.x + _x, transform.position.y + _y);
-            for (int x = -_x; x <= _x; x++)
+            while (true)
             {
-                for (int y = -_y; y <= _y; y++)
+                var maxSize = new Vector2(-transform.position.x + _x, transform.position.y + _y);
+                for (int x = -_x; x <= _x; x++)
                 {
-                    var go = Instantiate(_enemyPrefab, transform.position + new Vector3(x, y), Quaternion.identity);
-                    go.transform.parent = transform;
-                    go.GetComponent<EnemyController>().WorldMaxSize = maxSize;
-                    _instancied.Add(go);
+                    for (int y = -_y; y <= _y; y++)
+                    {
+                        var go = Instantiate(_enemyPrefab, transform.position + new Vector3(x, y), Quaternion.identity);
+                        go.transform.parent = transform;
+                        var ec = go.GetComponent<EnemyController>();
+                        ec.WorldMaxSize = maxSize;
+                        _instancied.Add(ec);
+                    }
+                }
+                var timer = 10f;
+                while (timer > 0)
+                {
+                    yield return new WaitForSeconds(1f);
+                    _timeRemainding.text = $"Wave end in {timer} seconds";
+                    timer--;
+                }
+                foreach (var p in _instancied)
+                {
+                    p.SetScore(p.gameObject.transform.position.x);
+                    Destroy(p.gameObject);
                 }
             }
         }
