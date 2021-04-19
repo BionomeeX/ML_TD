@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 namespace MLTD.ML
@@ -10,6 +11,64 @@ namespace MLTD.ML
         public List<ADataType> outputs;
         public List<int> hiddenLayers;
         public List<Numeric.Matrix> weights;
+
+        public bool Save(string filename)
+        {
+            using FileStream file = new FileStream(filename, FileMode.CreateNew, FileAccess.Write);
+            using BinaryWriter writer = new BinaryWriter(file);
+
+            writer.Write(this.inputSize);
+
+            writer.Write(hiddenLayers.Count);
+            for (int i = 0; i < hiddenLayers.Count; ++i)
+            {
+                writer.Write(hiddenLayers[i]);
+            }
+
+            writer.Write(outputs.Count);
+            for (int i = 0; i < outputs.Count; ++i)
+            {
+                outputs[i].Write(writer);
+            }
+
+            writer.Write(weights.Count);
+            for (int i = 0; i < weights.Count; ++i)
+            {
+                weights[i].Write(writer);
+            }
+
+            return true;
+        }
+
+        public static NN read(string filename){
+            using FileStream file = new FileStream(filename, FileMode.Open, FileAccess.Read);
+            using BinaryReader reader = new BinaryReader(file);
+
+            int inputsize = reader.ReadInt32();
+
+            int hlcount = reader.ReadInt32();
+            List<int> hiddenlayers = new List<int>(hlcount);
+            for(int i = 0; i < hlcount; ++i){
+                hiddenlayers.Add(reader.ReadInt32());
+            }
+
+            int outputcount = reader.ReadInt32();
+            List<ADataType> outputs = new List<ADataType>(outputcount);
+            for(int i = 0; i < outputcount; ++i){
+                outputs.Add(DataTypeFactory.Read(reader));
+            }
+
+            int weightscount = reader.ReadInt32();
+            List<Numeric.Matrix> weigths = new List<Numeric.Matrix>(weightscount);
+            for(int i = 0; i < weightscount; ++i){
+                weigths.Add(Numeric.Matrix.Read(reader));
+            }
+
+            NN nn = new NN(inputsize, outputs, hiddenlayers);
+            nn.weights = weigths;
+
+            return nn;
+        }
 
         public NN(int inputSize, List<ADataType> outputs, List<int> hiddenLayers)
         {
@@ -36,29 +95,21 @@ namespace MLTD.ML
                 weight.Randomize();
             }
 
-            // foreach(var w in this.weights){
-            //     for(int line = 0; line < w.nline; ++line){
-            //         string l = "";
-            //         for(int col = 0; col < w.ncolumn; ++col){
-            //             l += w.At(line, col) + "  ";
-            //         }
-            //         Debug.Log(l);
-            //     }
-            //     Debug.Log("");
-            // }
-
         }
 
-        public NN(NN other){
+        public NN(NN other)
+        {
             this.inputSize = other.inputSize;
             this.outputs = new List<ADataType>(other.outputs);
             this.hiddenLayers = new List<int>(other.hiddenLayers);
             this.weights = new List<Numeric.Matrix>(other.weights);
         }
 
-        public static NN RandomLike(NN other) {
+        public static NN RandomLike(NN other)
+        {
             NN newNN = new NN(other);
-            foreach(var w in newNN.weights){
+            foreach (var w in newNN.weights)
+            {
                 w.Randomize();
                 w.ScaleByLine();
             }
