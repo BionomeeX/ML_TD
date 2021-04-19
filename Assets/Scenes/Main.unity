@@ -133,8 +133,9 @@ GameObject:
   m_Component:
   - component: {fileID: 41034817}
   - component: {fileID: 41034818}
+  - component: {fileID: 41034819}
   m_Layer: 0
-  m_Name: Spawner
+  m_Name: GameManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -168,6 +169,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _enemyPrefab: {fileID: 4696245297704340880, guid: 5bf45622250a7f84da31c2e4b1cc89d6, type: 3}
   _timeRemainding: {fileID: 400609951}
+--- !u!114 &41034819
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 41034816}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9798fc5675f4e7e45895bb4d15ed96d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _turret: {fileID: 1602426999663115214, guid: 70d8196f7de5d7440b55c0ae74eafca9, type: 3}
 --- !u!1 &91694974
 GameObject:
   m_ObjectHideFlags: 0

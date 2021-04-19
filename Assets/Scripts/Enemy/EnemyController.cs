@@ -69,6 +69,10 @@ namespace MLTD.Enemy
                             ro = RaycastOutput.WALL;
                             break;
 
+                        case "Turret":
+                            ro = RaycastOutput.TURRET_NORMAL;
+                            break;
+
                         default:
                             ro = RaycastOutput.UNKNOWN;
                             break;
