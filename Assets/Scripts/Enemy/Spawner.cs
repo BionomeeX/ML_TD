@@ -20,6 +20,8 @@ namespace MLTD.Enemy
         private const int _x = 3;
         private const int _y = 5;
 
+        private int _waveCount = 1;
+
         private void Start()
         {
             StartCoroutine(SpawnAll());
@@ -47,7 +49,7 @@ namespace MLTD.Enemy
                 while (timer > 0)
                 {
                     yield return new WaitForSeconds(1f);
-                    _timeRemainding.text = $"Wave end in {timer} seconds";
+                    _timeRemainding.text = $"Wave ${_waveCount} end in {timer} seconds";
                     timer--;
                 }
                 networks = GeneticAlgorithm.GeneratePool(_instancied.Select(ec => (ec.Network, ec.gameObject.transform.position.x)).ToList(), 100);
@@ -56,6 +58,7 @@ namespace MLTD.Enemy
                     Destroy(p.gameObject);
                 }
                 _instancied.RemoveAll(x => true);
+                _waveCount++;
             }
         }
 
