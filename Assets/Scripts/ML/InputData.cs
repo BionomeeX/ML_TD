@@ -18,5 +18,7 @@ namespace MLTD.ML
         public bool CanUseSkill;
         public float SkillTimer;
         public float SkillTimerMaxDuration;
+
+        public Vector2 LeaderPosition;
     }
 }

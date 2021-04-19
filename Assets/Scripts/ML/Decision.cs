@@ -23,6 +23,7 @@ namespace MLTD.ML
             data.CanUseSkill = false;
             data.SkillTimer = 0f;
             data.SkillTimerMaxDuration = 0f;
+            data.LeaderPosition = Vector2.one;
 
             return InputToFloatArray(data).Length;
         }
@@ -30,8 +31,10 @@ namespace MLTD.ML
         public static float[] InputToFloatArray(InputData input)
         {
             List<float> data = new List<float>();
-            data.Add(input.Position.x / input.WorldSize.x);
-            data.Add(input.Position.y / input.WorldSize.y);
+            var myPos = new Vector2(input.Position.x / input.WorldSize.x, input.Position.y / input.WorldSize.y);
+            var leaderPos = new Vector2(input.LeaderPosition.x / input.WorldSize.x, input.LeaderPosition.y / input.WorldSize.y);
+            data.Add(myPos.x);
+            data.Add(myPos.y);
             data.Add(input.Direction);
             data.Add(input.Speed);
             foreach (var elem in input.RaycastInfos)
@@ -50,6 +53,8 @@ namespace MLTD.ML
             }
             data.Add(input.CanUseSkill ? 1f : 0f);
             data.Add(input.SkillTimer / input.SkillTimerMaxDuration);
+            data.Add(leaderPos.x - myPos.x);
+            data.Add(leaderPos.y - myPos.y);
             return data.ToArray();
         }
 

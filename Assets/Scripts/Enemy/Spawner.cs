@@ -37,6 +37,7 @@ namespace MLTD.Enemy
             {
                 var maxSize = new Vector2(-transform.position.x + _x, transform.position.y + _y);
                 int count = 0;
+                List<Transform> leaders = new List<Transform>();
                 for (int x = -_x; x <= _x; x++)
                 {
                     for (int y = -_y; y <= _y; y++)
@@ -44,11 +45,24 @@ namespace MLTD.Enemy
                         var go = Instantiate(_enemyPrefab, transform.position + new Vector3(x, y), Quaternion.identity);
                         go.transform.parent = transform;
                         var ec = go.GetComponent<EnemyController>();
-                        ec.Init(networks.Count == 0 ? null : new NN(networks[ count ]));
+                        var rand = Random.Range(0, 100);
+                        RaycastOutput type;
+                        if (rand < 5) type = RaycastOutput.ENEMY_LEADER;
+                        else if (rand < 20) type = RaycastOutput.ENEMY_SHIELD;
+                        else type = RaycastOutput.ENEMY_SCOUT;
+                        ec.Init(networks.Count == 0 ? null : new NN(networks[count]), type);
+                        if (type == RaycastOutput.ENEMY_LEADER)
+                        {
+                            leaders.Add(ec.transform);
+                        }
                         ec.WorldMaxSize = maxSize;
                         _instancied.Add(ec);
                         count++;
                     }
+                }
+                foreach (var e in _instancied)
+                {
+                    e.SetLeader(e.MyType == RaycastOutput.ENEMY_LEADER ? null : leaders[Random.Range(0, leaders.Count)]);
                 }
                 var timer = 10f;
                 while (timer > 0)
