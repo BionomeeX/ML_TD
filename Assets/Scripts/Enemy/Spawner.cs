@@ -119,21 +119,21 @@ namespace MLTD.Enemy
         {
             StringBuilder str = new StringBuilder();
             str.AppendLine("<b>INPUT</b>");
-            str.AppendLine($"Position: ({input.Position.x};{input.Position.y})");
-            str.AppendLine($"Leader Position: ({input.LeaderPosition.x};{input.LeaderPosition.y})");
-            str.AppendLine("Direction: " + input.Direction);
-            str.AppendLine("Speed: " + input.Speed);
+            str.AppendLine($"Position: ({input.Position.x:0.00};{input.Position.y:0.00})");
+            str.AppendLine($"Leader Position: ({input.LeaderPosition.x:0.00};{input.LeaderPosition.y:0.00})");
+            str.AppendLine($"Direction: {input.Direction:0.00}");
+            str.AppendLine($"Speed: {input.Speed:0.00}");
             int i = 1;
             foreach (var ray in input.RaycastInfos)
             {
-                str.AppendLine($"Raycast {i}: {ray.Item1} (Distance {ray.Item2})");
+                str.AppendLine($"Raycast {i}: {ray.Item1} (Distance {ray.Item2:0.00})");
                 i++;
             }
             str.AppendLine("\n<b>RAW INPUT</b>");
-            str.AppendLine(string.Join(", ", Decision.InputToFloatArray(input)));
+            str.AppendLine(string.Join(", ", Decision.InputToFloatArray(input).Select(x => x.ToString("0.00"))));
             str.AppendLine("\n<b>OUTPUT</b>");
-            str.AppendLine("Direction: " + output.Direction);
-            str.AppendLine("Speed: " + output.Speed);
+            str.AppendLine($"Direction: {output.Direction:0.00}");
+            str.AppendLine($"Speed: {output.Speed:0.00}");
             str.AppendLine("Skill state: " + output.SkillState);
             str.AppendLine("Message: " + string.Join("", output.Message.Select(x => x ? "1" : "0")));
 
