@@ -14,6 +14,8 @@
 
         ENEMY_LEADER,
         ENEMY_SHIELD,
-        ENEMY_SCOUT
+        ENEMY_SCOUT,
+
+        ENEMY_DEAD
     }
 }

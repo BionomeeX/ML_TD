@@ -54,6 +54,7 @@ namespace MLTD.ML
             data.Add(myPos.y);
             data.Add(input.Direction);
             data.Add(input.Speed);
+            data.Add(input.Health / (float)input.MaxHealth);
             foreach (var elem in input.RaycastInfos)
             {
                 var max = Enum.GetValues(typeof(RaycastOutput)).Cast<int>().Max() + 1;

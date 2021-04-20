@@ -47,6 +47,22 @@ namespace MLTD.Enemy
             return transform.position.x - _malusScore;
         }
 
+        // Life management
+        private const int _maxHealth = 10;
+        private int _currentHealth = _maxHealth;
+
+        public void TakeDamage(int value)
+        {
+            _currentHealth -= value;
+            if (_currentHealth <= 0) // Is dead
+            {
+                GetComponent<SpriteRenderer>().color = Color.gray;
+                MyType = RaycastOutput.ENEMY_DEAD;
+            }
+        }
+        public bool IsAlive()
+            => _currentHealth > 0;
+
         /// <summary>
         /// When clicking on an AI, we begin to track its debug info
         /// </summary>
@@ -119,6 +135,12 @@ namespace MLTD.Enemy
 
         private void FixedUpdate()
         {
+            if (_currentHealth <= 0)
+            {
+                _rb.velocity = Vector2.zero;
+                return;
+            }
+
             // Fire raycasts and get info from each of them
             List<Tuple<RaycastOutput, float>> raycasts = new List<Tuple<RaycastOutput, float>>();
             foreach (var dir in _settings.VisionAngles)
@@ -179,7 +201,9 @@ namespace MLTD.Enemy
                 WorldSize = WorldMaxSize,
                 Position = transform.position,
                 RaycastInfos = raycasts.ToArray(),
-                RaycastMaxSize = _settings.VisionAngles.Length
+                RaycastMaxSize = _settings.VisionAngles.Length,
+                Health = _currentHealth,
+                MaxHealth = _maxHealth
             };
             // When using rotation, speed is velocity magnitude and direction our angle
             // Else speed is velocity on X axis and direction the one on Y

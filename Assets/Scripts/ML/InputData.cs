@@ -22,5 +22,8 @@ namespace MLTD.ML
         public Vector2 LeaderPosition;
 
         public float[] Memory;
+
+        public int Health;
+        public int MaxHealth;
     }
 }

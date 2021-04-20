@@ -220,6 +220,7 @@ namespace MLTD.Enemy
             str.AppendLine($"Last best score: {_lastBestScore:0.00}");
 
             str.AppendLine("\n<b>INPUT</b>");
+            str.AppendLine($"Health: {input.Health} / {input.MaxHealth}");
             str.AppendLine($"Position: ({input.Position.x:0.00};{input.Position.y:0.00})");
             if (_settings.EnableLeadership)
             {
