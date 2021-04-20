@@ -36,7 +36,7 @@ namespace MLTD.Player
         {
             var hor = Input.GetAxis("Horizontal");
             var ver = Input.GetAxis("Vertical");
-            _rb.velocity = new Vector2(hor, ver) * _speed;
+            _rb.velocity = new Vector2(hor, ver).normalized * _speed;
         }
 
         public void UpdateGoldText()
