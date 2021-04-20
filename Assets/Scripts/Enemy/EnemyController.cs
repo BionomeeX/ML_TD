@@ -40,7 +40,12 @@ namespace MLTD.Enemy
         private bool[] _lastMessage = new bool[messageSize];
 
         // Value to remove to the score calculated for the neural network performance
-        public float MalusScore { private set; get; }
+        private float _malusScore;
+
+        public float GetScore()
+        {
+            return transform.position.x - _malusScore;
+        }
 
         /// <summary>
         /// When clicking on an AI, we begin to track its debug info

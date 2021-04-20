@@ -146,7 +146,7 @@ namespace MLTD.Enemy
                 }
 
                 // Keep best AI and setup new neural networks for next generation
-                List<(NN network, float score)> oldgen = _instancied.Select(ec => (ec.Network, ec.gameObject.transform.position.x - ec.MalusScore)).ToList();
+                List<(NN network, float score)> oldgen = _instancied.Select(ec => (ec.Network, ec.GetScore())).ToList();
                 networks_BestOf.AddRange(oldgen);
                 networks_BestOf.Sort(delegate
                 ((NN network, float score) a, (NN network, float score) b)
@@ -216,8 +216,8 @@ namespace MLTD.Enemy
             str.AppendLine(ec.name + " - " + ec.MyType.ToString());
             var v = ec.GetVelocity();
             str.AppendLine($"Velocity: ({v.x:0.00};{v.y:0.00})");
-            str.AppendLine($"Current score: {(ec.transform.position.x - ec.MalusScore):0.00}");
-            str.AppendLine($"Best scole on last gen: {_lastBestScore:0.00}");
+            str.AppendLine($"Current score: {(ec.GetScore()):0.00}");
+            str.AppendLine($"Last best score: {_lastBestScore:0.00}");
 
             str.AppendLine("\n<b>INPUT</b>");
             str.AppendLine($"Position: ({input.Position.x:0.00};{input.Position.y:0.00})");
