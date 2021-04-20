@@ -188,7 +188,7 @@ namespace MLTD.Enemy
         /// </summary>
         /// <param name="input">Last infos the AI sent to the neural network</param>
         /// <param name="output">Last infos the AI received from the neural network</param>
-        private void DisplayDebug(EnemyController ec, InputData input, OutputData output)
+        private void DisplayDebug(EnemyController ec, InputData input, float[] rawOutput, OutputData output)
         {
             StringBuilder str = new StringBuilder();
             str.AppendLine("<b>GENERAL</b>");
@@ -210,25 +210,26 @@ namespace MLTD.Enemy
                 str.AppendLine($"Raycast {i}: {ray.Item1} (Distance {ray.Item2:0.00})");
                 i++;
             }
-
             if (_settings.EnableMemory)
             {
-                i = 1;
-                foreach (var ray in input.Memory)
-                {
-                    str.AppendLine($"Memory raycast {i}: {ray.Item1} at position ({ray.Item2.x:0.00};{ray.Item2.y:0.00})");
-                    i++;
-                }
+                str.AppendLine("Memory: " + string.Join(", ", input.Memory.Select(x => x.ToString("0.00"))));
             }
-
-            str.AppendLine("\n<b>RAW INPUT</b>");
-            str.AppendLine(string.Join(", ", Decision.InputToFloatArray(_settings, input).Select(x => x.ToString("0.00"))));
 
             str.AppendLine("\n<b>OUTPUT</b>");
             str.AppendLine($"Direction: {output.Direction:0.00}");
             str.AppendLine($"Speed: {output.Speed:0.00}");
             str.AppendLine("Skill state: " + output.SkillState);
             str.AppendLine("Message: " + string.Join("", output.Message.Select(x => x ? "1" : "0")));
+            if (_settings.EnableMemory)
+            {
+                str.AppendLine("Memory: " + string.Join(", ", output.Memory.Select(x => x.ToString("0.00"))));
+            }
+
+            str.AppendLine("\n<b>RAW INPUT</b>");
+            str.AppendLine(string.Join(", ", Decision.InputToFloatArray(_settings, input).Select(x => x.ToString("0.00"))));
+
+            str.AppendLine("\n<b>RAW OUTPUT</b>");
+            str.AppendLine(string.Join(", ", rawOutput.Select(x => x.ToString("0.00"))));
 
             _debugText.text = str.ToString();
         }

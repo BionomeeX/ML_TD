@@ -21,6 +21,6 @@ namespace MLTD.ML
 
         public Vector2 LeaderPosition;
 
-        public Tuple<RaycastOutput, Vector2>[] Memory;
+        public float[] Memory;
     }
 }

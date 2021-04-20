@@ -6,5 +6,6 @@
         public float Speed;
         public bool SkillState;
         public bool[] Message;
+        public float[] Memory;
     }
 }

@@ -18,11 +18,11 @@ namespace MLTD.Enemy
 
         // Constants for messages sent/received
         // Number max of message sent by an AI
-        private const int nbMessagesInput = 5;
+        private const int nbMessagesInput = 5; // TODO: move into config file
         // Size of a message sent
         private const int messageSize = 10;
 
-        private List<Tuple<RaycastOutput, Vector2>> _memory = new List<Tuple<RaycastOutput, Vector2>>();
+        private float[] _memory;
 
         // Type of the AI, must be ENEMY_*
         public RaycastOutput MyType { private set; get; }
@@ -31,7 +31,7 @@ namespace MLTD.Enemy
         private EnemyController _leader;
 
         // Function we send debug info to
-        public Action<EnemyController, InputData, OutputData> DisplayDebugCallback { set; get; }
+        public Action<EnemyController, InputData, float[], OutputData> DisplayDebugCallback { set; get; }
 
         // Keep track of the spawner that instanciated us
         private Spawner _spawner;
@@ -54,6 +54,10 @@ namespace MLTD.Enemy
         private void Start()
         {
             _rb = GetComponent<Rigidbody2D>();
+            if (_settings.EnableMemory)
+            {
+                _memory = new float[_settings.MemorySize];
+            }
         }
 
         public void Init(NN network, RaycastOutput type, Spawner spawner, AISettings settings)
@@ -131,17 +135,6 @@ namespace MLTD.Enemy
                         _ => RaycastOutput.UNKNOWN,
                     };
                 }
-                raycasts.Add(new Tuple<RaycastOutput, float>(ro, dist));
-                if (_settings.EnableMemory && dir == 0f && _lastMessageKept >= _settings.TimeBetweenMemoryAcquisition * 50f) // FixedUpdate is called every 0.02 seconds by default
-                {
-                    _lastMessageKept = 0;
-                    var mData = new Tuple<RaycastOutput, Vector2>(ro, hit.point);
-                    if (_memory.Count == _settings.MemorySize)
-                    {
-                        _memory.RemoveAt(0);
-                    }
-                    _memory.Add(mData);
-                }
             }
 
             // If we have a leader, display debug green line between AI and him
@@ -212,21 +205,17 @@ namespace MLTD.Enemy
 
             if (_settings.EnableMemory)
             {
-                var dataMemory = new List<Tuple<RaycastOutput, Vector2>>(_memory);
-                for (int i = dataMemory.Count; i < _settings.MemorySize; i++)
-                {
-                    dataMemory.Add(new Tuple<RaycastOutput, Vector2>(RaycastOutput.NONE, Vector2.zero));
-                }
-                data.Memory = dataMemory.ToArray();
+                data.Memory = _memory;
             }
 
             // Call to neural network
-            var output = Decision.Decide(_settings, data, Network);
+            var fOutput = Decision.Decide(_settings, data, Network);
+            var output = Decision.FloatArrayToOutput(_settings, fOutput);
 
             // If a debug callback is set, we use it
             if (_settings.EnableDebug)
             {
-                DisplayDebugCallback?.Invoke(this, data, output);
+                DisplayDebugCallback?.Invoke(this, data, fOutput, output);
             }
 
             // Use info returned by neural network
@@ -254,6 +243,7 @@ namespace MLTD.Enemy
             }
             _rb.velocity = Vector2.ClampMagnitude(_rb.velocity, _settings.AgentLinearSpeed);
             _lastMessage = output.Message;
+            _memory = output.Memory;
         }
 
         public void OnDrawGizmos()
