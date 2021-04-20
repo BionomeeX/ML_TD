@@ -80,7 +80,7 @@ namespace MLTD.Enemy
             {
                 for (int i = 0; i < _settings.MemorySize; ++i)
                 {
-                    outputTypes.Add(new ML.Real());
+                    outputTypes.Add(new ML.Range(0f, 1f));
                 }
             }
 
