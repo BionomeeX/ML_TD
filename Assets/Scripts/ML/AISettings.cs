@@ -73,6 +73,12 @@ namespace MLTD.ML
         public int MemorySize = 10;
 
 
+        [Header("Structure settings")]
+
+        [Tooltip("Neurones per hidden layers")]
+        public int[] HiddenLayer = new []{30};
+
+
         [Header("Debug settings")]
 
         [Tooltip("Enable display of debug information with gizmos")]
