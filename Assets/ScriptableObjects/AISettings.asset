@@ -29,6 +29,7 @@ MonoBehaviour:
   LeadershipMaxDistance: 15
   EnableMemory: 1
   MemorySize: 10
+  HiddenLayer: 05000000050000000500000005000000050000000500000005000000
   EnableDebug: 1
   VisionDebug: {r: 0, g: 0, b: 0, a: 0}
   VisionCollidingDebug: {r: 0, g: 0, b: 1, a: 1}
