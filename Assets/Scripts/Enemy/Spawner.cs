@@ -1,4 +1,5 @@
 ﻿using MLTD.ML;
+using MLTD.Turret;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,6 +43,15 @@ namespace MLTD.Enemy
         // Current enemy we display debug information about
         private EnemyController _currentDebugFollowed;
 
+        public List<TurretZone> TurretZones { private set; get; } = new List<TurretZone>();
+
+        public static Spawner S;
+
+        private void Awake()
+        {
+            S = this;
+        }
+
         private void Start()
         {
             if (!_settings.EnableDebug)
@@ -77,6 +87,11 @@ namespace MLTD.Enemy
 
                 var maxSize = new Vector2(-transform.position.x + _x, transform.position.y + _y);
                 int count = 0;
+
+                foreach (var zone in TurretZones)
+                {
+                    zone.Regenerate();
+                }
 
                 // Keep list of all leaders currently spawned
                 List<EnemyController> leaders = new List<EnemyController>();
