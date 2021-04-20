@@ -30,7 +30,7 @@ namespace MLTD.Enemy
         private const float _waveLength = 15f;
 
         // List of all instanciated ennemies
-        private List<EnemyController> _instancied = new List<EnemyController>();
+        private readonly List<EnemyController> _instancied = new List<EnemyController>();
 
         // Spawn zone
         private const int _x = 3;

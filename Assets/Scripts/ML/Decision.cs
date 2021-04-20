@@ -10,19 +10,21 @@ namespace MLTD.ML
         // Get the size of a request to the neural network
         public static int GetFloatArraySize(AISettings settings, int nbMessages, int msgSize)
         {
-            InputData data = new InputData();
+            InputData data = new InputData
+            {
+                WorldSize = Vector2.one,
+                Position = Vector2.one,
+                Direction = 1f,
+                Speed = 1f,
+                RaycastInfos = new Tuple<RaycastOutput, float>[settings.VisionAngles.Length],
+                RaycastMaxSize = settings.VisionAngles.Length,
+                CanUseSkill = false,
+                SkillTimer = 0f,
+                SkillTimerMaxDuration = 0f
+            };
 
-            data.WorldSize = Vector2.one;
-            data.Position = Vector2.one;
-            data.Direction = 1f;
-            data.Speed = 1f;
-            data.RaycastInfos = new Tuple<RaycastOutput, float>[settings.VisionAngles.Length];
             for (int i = 0; i < settings.VisionAngles.Length; i++)
                 data.RaycastInfos[i] = new Tuple<RaycastOutput, float>(RaycastOutput.NONE, 0f);
-            data.RaycastMaxSize = settings.VisionAngles.Length;
-            data.CanUseSkill = false;
-            data.SkillTimer = 0f;
-            data.SkillTimerMaxDuration = 0f;
 
             if (settings.EnableLeadership)
             {
@@ -88,10 +90,12 @@ namespace MLTD.ML
         // Neural network float array to output structure
         public static OutputData FloatArrayToOutput(AISettings settings, float[] output)
         {
-            var o = new OutputData();
-            o.Direction = output[0];
-            o.Speed = output[1];
-            o.SkillState = output[2] > .5f;
+            var o = new OutputData
+            {
+                Direction = output[0],
+                Speed = output[1],
+                SkillState = output[2] > .5f
+            };
             List<bool> msg = new List<bool>();
             for (int i = 3; i < 13; i++) msg.Add(output[i] < .5f);
             o.Message = msg.ToArray();
@@ -99,6 +103,7 @@ namespace MLTD.ML
             {
                 List<float> memory = new List<float>();
                 for (int i = 13; i < 13 + settings.MemorySize; i++) memory.Add(output[i]);
+                o.Memory = memory.ToArray();
             }
             return o;
         }

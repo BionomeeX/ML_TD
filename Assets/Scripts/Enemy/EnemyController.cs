@@ -38,7 +38,6 @@ namespace MLTD.Enemy
 
         // Last message we generated from the neural network
         private bool[] _lastMessage = new bool[messageSize];
-        private int _lastMessageKept = 0;
 
         // Value to remove to the score calculated for the neural network performance
         public float MalusScore { private set; get; }
@@ -115,7 +114,6 @@ namespace MLTD.Enemy
 
         private void FixedUpdate()
         {
-            _lastMessageKept++;
             // Fire raycasts and get info from each of them
             List<Tuple<RaycastOutput, float>> raycasts = new List<Tuple<RaycastOutput, float>>();
             foreach (var dir in _settings.VisionAngles)
@@ -144,6 +142,7 @@ namespace MLTD.Enemy
                         _ => RaycastOutput.UNKNOWN,
                     };
                 }
+                raycasts.Add(new Tuple<RaycastOutput, float>(ro, dist));
             }
 
             // If we have a leader, display debug green line between AI and him
