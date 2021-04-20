@@ -261,12 +261,12 @@ namespace MLTD.Enemy
             // Else we just move by speed and direction on the corresponding axises
             if (_settings.ReplaceStrafeByRotation)
             {
-                forceUsed = transform.right * output.Speed * _settings.AgentLinearSpeed;
+                forceUsed = transform.right * output.Speed * _settings.AgentLinearSpeed * (output.Speed > 0f ? 1f : _settings.BackwardSpeedMultiplicator);
                 transform.Rotate(new Vector3(0f, 0f, output.Direction * _settings.AgentLinearSpeed));
             }
             else
             {
-                forceUsed = transform.right * output.Speed * _settings.AgentLinearSpeed
+                forceUsed = transform.right * output.Speed * _settings.AgentLinearSpeed * (output.Speed > 0f ? 1f : _settings.BackwardSpeedMultiplicator)
                         + transform.up * output.Direction * _settings.AgentLinearSpeed;
             }
             // If we smoothen the movements, we add it add force, else we just set the velocity

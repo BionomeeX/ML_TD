@@ -11,6 +11,10 @@ namespace MLTD.ML
         [Range(1, 50)]
         public float AgentLinearSpeed = 5f;
 
+        [Tooltip("Penality speed multiplicator for an AI when moving backward")]
+        [Range(0.1f, 1f)]
+        public float BackwardSpeedMultiplicator = .5f;
+
         [Tooltip("Angular speed of the agent")]
         [Range(1, 50)]
         public float AgentAngularSpeed = 10f;
@@ -20,6 +24,7 @@ namespace MLTD.ML
 
         [Tooltip("If enabled, the AI will rotate instead of strafing")]
         public bool ReplaceStrafeByRotation = true;
+
 
         [Header("Vision settings")]
 
