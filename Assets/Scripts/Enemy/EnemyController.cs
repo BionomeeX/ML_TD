@@ -255,10 +255,6 @@ namespace MLTD.Enemy
             _memory = output.Memory;
         }
 
-        public void OnDrawGizmos()
-        {
-        }
-
         public Vector2 GetVelocity()
             => _rb.velocity;
     }
