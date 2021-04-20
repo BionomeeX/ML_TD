@@ -105,11 +105,14 @@ namespace MLTD.Enemy
                 }
             }
 
+            // NNstruct = new List<int>(_settings.NNstruct)
+
             // Setup the neural network, if none provided, we create a new one that will contains random values
             Network = network ?? new NN(
                 Decision.GetFloatArraySize(_settings, nbMessagesInput, messageSize),
                 outputTypes,
-                new List<int> { 30 }
+                //new List<int> { 30 }
+                new List<int>(_settings.HiddenLayer)
                 );
 
             // Set the color of an AI depending of its type
