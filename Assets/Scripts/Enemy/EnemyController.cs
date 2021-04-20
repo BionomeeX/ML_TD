@@ -76,6 +76,15 @@ namespace MLTD.Enemy
             {
                 outputTypes.Add(new ML.Boolean());
             }
+
+            if (_settings.EnableMemory)
+            {
+                for (int i = 0; i < _settings.MemorySize; ++i)
+                {
+                    outputTypes.Add(new ML.Real());
+                }
+            }
+
             // Setup the neural network, if none provided, we create a new one that will contains random values
             Network = network ?? new NN(
                 Decision.GetFloatArraySize(_settings, nbMessagesInput, messageSize),
