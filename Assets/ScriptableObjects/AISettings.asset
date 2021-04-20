@@ -29,7 +29,7 @@ MonoBehaviour:
   LeadershipChance: 5
   LeadershipMaxDistance: 15
   EnableMemory: 1
-  MemorySize: 10
+  MemorySize: 70
   HiddenLayer: 1e000000
   EnableDebug: 1
   VisionDebug: {r: 0, g: 0, b: 0, a: 0}

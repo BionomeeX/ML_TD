@@ -51,6 +51,14 @@ namespace MLTD.Enemy
         private const int _maxHealth = 10;
         private int _currentHealth = _maxHealth;
 
+        private void OnCollisionEnter2D(Collision2D collision)
+        {
+            if (collision.collider.CompareTag("Victory"))
+            {
+                TakeDamage(1000);
+            }
+        }
+
         public void TakeDamage(int value)
         {
             _currentHealth -= value;
@@ -58,6 +66,7 @@ namespace MLTD.Enemy
             {
                 GetComponent<SpriteRenderer>().color = Color.gray;
                 MyType = RaycastOutput.ENEMY_DEAD;
+                _spawner.EndGame();
             }
         }
         public bool IsAlive()
@@ -169,6 +178,7 @@ namespace MLTD.Enemy
                         "Enemy" => hit.collider.GetComponent<EnemyController>().MyType,
                         "Wall" => RaycastOutput.WALL,
                         "Turret" => RaycastOutput.TURRET_NORMAL,
+                        "Victory" => RaycastOutput.VICTORY,
                         _ => RaycastOutput.UNKNOWN,
                     };
                 }

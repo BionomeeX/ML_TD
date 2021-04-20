@@ -16,6 +16,8 @@
         ENEMY_SHIELD,
         ENEMY_SCOUT,
 
-        ENEMY_DEAD
+        ENEMY_DEAD,
+
+        VICTORY
     }
 }

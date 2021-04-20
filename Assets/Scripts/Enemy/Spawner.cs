@@ -62,112 +62,110 @@ namespace MLTD.Enemy
             }
             int enemyLayerCollision = 6;
             Physics2D.IgnoreLayerCollision(enemyLayerCollision, enemyLayerCollision, !_settings.EnableAICollision);
-            StartCoroutine(SpawnAll());
+            SpawnAll();
             if (_debugDisplay != null)
             {
                 StartCoroutine(KeepDebugUpdated());
             }
         }
 
+
+        private const int bestOfMaxCount = 20;
+        private List<NN> networks = new List<NN>();
+        private List<(NN network, float score)> networks_BestOf = new List<(NN network, float score)>(bestOfMaxCount);
         /// <summary>
         /// Coroutine that manage the spawing and training of AI
         /// </summary>
-        private IEnumerator SpawnAll()
+        private void SpawnAll()
         {
-            int bestOfMaxCount = 20;
-            List<NN> networks = new List<NN>();
-            List<(NN network, float score)> networks_BestOf = new List<(NN network, float score)>(bestOfMaxCount);
-
-            while (true)
+            // Reset debug pannel
+            if (_debugDisplay.activeInHierarchy)
             {
-                // Reset debug pannel
-                if (_debugDisplay.activeInHierarchy)
-                {
-                    _currentDebugFollowed = null;
-                    _isDebugSetManually = false;
-                }
-
-                var maxSize = new Vector2(-transform.position.x + _x, transform.position.y + _y);
-                int count = 0;
-
-                foreach (var zone in TurretZones)
-                {
-                    zone.Regenerate();
-                }
-
-                // Keep list of all leaders currently spawned
-                List<EnemyController> leaders = new List<EnemyController>();
-
-                // Spawn AI on each tile of spawn zone
-                for (int x = -_x; x <= _x; x++)
-                {
-                    for (int y = -_y; y <= _y; y++)
-                    {
-                        // Spawn AI
-                        var go = Instantiate(_enemyPrefab, transform.position + new Vector3(x, y), Quaternion.identity);
-                        go.transform.parent = transform;
-
-                        // Set AI type
-                        var ec = go.GetComponent<EnemyController>();
-                        var rand = Random.Range(0, 100);
-                        RaycastOutput type;
-                        if (_settings.EnableLeadership && rand < _settings.LeadershipChance) type = RaycastOutput.ENEMY_LEADER;
-                        else type = RaycastOutput.ENEMY_SCOUT;
-                        ec.Init(networks.Count == 0 ? null : new NN(networks[count]), type, this, _settings);
-                        ec.WorldMaxSize = maxSize;
-                        ec.name = "AI " + count;
-
-                        // We keep track of leaders
-                        if (type == RaycastOutput.ENEMY_LEADER)
-                        {
-                            leaders.Add(ec);
-                        }
-                        _instancied.Add(ec);
-                        count++;
-                    }
-                }
-
-                // Set the leader of each AI (leader doesn't have another leader on top of them)
-                if (_settings.EnableLeadership && leaders.Count > 0)
-                {
-                    foreach (var e in _instancied)
-                    {
-                        e.SetLeader(e.MyType == RaycastOutput.ENEMY_LEADER ? null : leaders[Random.Range(0, leaders.Count)]);
-                    }
-                }
-
-                // Display the timer on the game
-                var timer = _waveLength;
-                while (timer > 0)
-                {
-                    yield return new WaitForSeconds(1f);
-                    _timeRemainding.text = $"Wave {_waveCount} end in {timer} seconds";
-                    timer--;
-                }
-
-                // Keep best AI and setup new neural networks for next generation
-                List<(NN network, float score)> oldgen = _instancied.Select(ec => (ec.Network, ec.GetScore())).ToList();
-                networks_BestOf.AddRange(oldgen);
-                networks_BestOf.Sort(delegate
-                ((NN network, float score) a, (NN network, float score) b)
-                {
-                    return b.score.CompareTo(a.score);
-                });
-                networks_BestOf = networks_BestOf.Take(bestOfMaxCount).ToList();
-                if (_settings.EnableDebug)
-                {
-                    _lastBestScore = oldgen.Max(x => x.score);
-                }
-                networks = GeneticAlgorithm.GeneratePool(oldgen, networks_BestOf, _instancied.Count);
-
-                // All AIs are killed
-                foreach (var p in _instancied)
-                {
-                    Destroy(p.gameObject);
-                }
-                _instancied.RemoveAll(x => true);
-                _waveCount++;
+                _currentDebugFollowed = null;
+                _isDebugSetManually = false;
             }
+
+            var maxSize = new Vector2(-transform.position.x + _x, transform.position.y + _y);
+            int count = 0;
+
+            foreach (var zone in TurretZones)
+            {
+                zone.Regenerate();
+            }
+
+            // Keep list of all leaders currently spawned
+            List<EnemyController> leaders = new List<EnemyController>();
+
+            // Spawn AI on each tile of spawn zone
+            for (int x = -_x; x <= _x; x++)
+            {
+                for (int y = -_y; y <= _y; y++)
+                {
+                    // Spawn AI
+                    var go = Instantiate(_enemyPrefab, transform.position + new Vector3(x, y), Quaternion.identity);
+                    go.transform.parent = transform;
+
+                    // Set AI type
+                    var ec = go.GetComponent<EnemyController>();
+                    var rand = Random.Range(0, 100);
+                    RaycastOutput type;
+                    if (_settings.EnableLeadership && rand < _settings.LeadershipChance) type = RaycastOutput.ENEMY_LEADER;
+                    else type = RaycastOutput.ENEMY_SCOUT;
+                    ec.Init(networks.Count == 0 ? null : new NN(networks[count]), type, this, _settings);
+                    ec.WorldMaxSize = maxSize;
+                    ec.name = "AI " + count;
+
+                    // We keep track of leaders
+                    if (type == RaycastOutput.ENEMY_LEADER)
+                    {
+                        leaders.Add(ec);
+                    }
+                    _instancied.Add(ec);
+                    count++;
+                }
+            }
+
+            // Set the leader of each AI (leader doesn't have another leader on top of them)
+            if (_settings.EnableLeadership && leaders.Count > 0)
+            {
+                foreach (var e in _instancied)
+                {
+                    e.SetLeader(e.MyType == RaycastOutput.ENEMY_LEADER ? null : leaders[Random.Range(0, leaders.Count)]);
+                }
+            }
+
+            _timeRemainding.text = $"Current wave: {_waveCount}";
+        }
+
+        public void EndGame()
+        {
+            if (!_instancied.All(x => !x.IsAlive())) // If everyone isn't dead yet
+            {
+                return;
+            }
+            // Keep best AI and setup new neural networks for next generation
+            List<(NN network, float score)> oldgen = _instancied.Select(ec => (ec.Network, ec.GetScore())).ToList();
+            networks_BestOf.AddRange(oldgen);
+            networks_BestOf.Sort(delegate
+            ((NN network, float score) a, (NN network, float score) b)
+            {
+                return b.score.CompareTo(a.score);
+            });
+            networks_BestOf = networks_BestOf.Take(bestOfMaxCount).ToList();
+            if (_settings.EnableDebug)
+            {
+                _lastBestScore = oldgen.Max(x => x.score);
+            }
+            networks = GeneticAlgorithm.GeneratePool(oldgen, networks_BestOf, _instancied.Count);
+
+            // All AIs are killed
+            foreach (var p in _instancied)
+            {
+                Destroy(p.gameObject);
+            }
+            _instancied.RemoveAll(x => true);
+            _waveCount++;
+            SpawnAll();
         }
 
         // Update the debug with the element the further on the X axis, is disabled if the user manually select an element
