@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: AISettings
   m_EditorClassIdentifier: 
   AgentLinearSpeed: 5
+  BackwardSpeedMultiplicator: 0.1
   AgentAngularSpeed: 10
   SmoothenMovements: 1
   ReplaceStrafeByRotation: 1
@@ -29,6 +30,7 @@ MonoBehaviour:
   LeadershipMaxDistance: 15
   EnableMemory: 1
   MemorySize: 10
+  HiddenLayer: 1e000000
   EnableDebug: 1
   VisionDebug: {r: 0, g: 0, b: 0, a: 0}
   VisionCollidingDebug: {r: 0, g: 0, b: 1, a: 1}

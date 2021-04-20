@@ -13,7 +13,7 @@ namespace MLTD.ML
 
         [Tooltip("Penality speed multiplicator for an AI when moving backward")]
         [Range(0.1f, 1f)]
-        public float BackwardSpeedMultiplicator = .5f;
+        public float BackwardSpeedMultiplicator = .1f;
 
         [Tooltip("Angular speed of the agent")]
         [Range(1, 50)]
