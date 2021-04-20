@@ -47,6 +47,8 @@ namespace MLTD.Enemy
 
         public static Spawner S;
 
+        private float _lastBestScore = float.NaN;
+
         private void Awake()
         {
             S = this;
@@ -152,6 +154,10 @@ namespace MLTD.Enemy
                     return b.score.CompareTo(a.score);
                 });
                 networks_BestOf = networks_BestOf.Take(bestOfMaxCount).ToList();
+                if (_settings.EnableDebug)
+                {
+                    _lastBestScore = oldgen.Max(x => x.score);
+                }
                 networks = GeneticAlgorithm.GeneratePool(oldgen, networks_BestOf, _instancied.Count);
 
                 // All AIs are killed
@@ -210,6 +216,8 @@ namespace MLTD.Enemy
             str.AppendLine(ec.name + " - " + ec.MyType.ToString());
             var v = ec.GetVelocity();
             str.AppendLine($"Velocity: ({v.x:0.00};{v.y:0.00})");
+            str.AppendLine($"Current score: {(ec.transform.position.x - ec.MalusScore):0.00}");
+            str.AppendLine($"Best scole on last gen: {_lastBestScore:0.00}");
 
             str.AppendLine("\n<b>INPUT</b>");
             str.AppendLine($"Position: ({input.Position.x:0.00};{input.Position.y:0.00})");
