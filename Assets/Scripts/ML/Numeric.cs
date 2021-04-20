@@ -180,6 +180,7 @@ namespace MLTD.ML
 
         public static Vector MatMultBias(Matrix m, Vector v)
         {
+            // Debug.Log("m : " + m.nline + " x " + m.ncolumn + "  | v : " + v.size);
             Vector result = new Vector(m.nline);
             for (int line = 0; line < m.nline; ++line)
             {
