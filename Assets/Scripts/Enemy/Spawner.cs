@@ -80,10 +80,13 @@ namespace MLTD.Enemy
 
         private IEnumerator RespawnTurrets()
         {
-            yield return new WaitForSeconds(60f);
-            foreach (var zone in TurretZones)
+            while (true)
             {
-                zone.Regenerate();
+                yield return new WaitForSeconds(60f);
+                foreach (var zone in TurretZones)
+                {
+                    zone.Regenerate();
+                }
             }
         }
 
