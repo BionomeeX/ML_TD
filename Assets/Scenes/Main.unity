@@ -171,8 +171,8 @@ MonoBehaviour:
   _timeRemainding: {fileID: 400609951}
   _debugDisplay: {fileID: 943899889}
   _settings: {fileID: 11400000, guid: 8b4570a3af2fc5047a1133ccfa340b01, type: 2}
-  _x: 1
-  _y: 1
+  _x: 2
+  _y: 2
 --- !u!114 &41034819
 MonoBehaviour:
   m_ObjectHideFlags: 0

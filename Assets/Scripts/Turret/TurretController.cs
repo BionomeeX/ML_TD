@@ -27,5 +27,10 @@ namespace MLTD.Turret
                 }
             }
         }
+
+        public void RemoveAgent(EnemyController ec)
+        {
+            Triggers.RemoveAll(x => x.name == ec.name);
+        }
     }
 }

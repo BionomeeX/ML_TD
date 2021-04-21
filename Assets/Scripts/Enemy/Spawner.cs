@@ -37,6 +37,11 @@ namespace MLTD.Enemy
         [SerializeField]
         private int _y = 5;
 
+        public void RemoveAgentFromTurrets(EnemyController ec)
+        {
+            TurretZones.ForEach(x => x.RemoveAgent(ec));
+        }
+
         // Current wave
         private int _waveCount = 1;
 

@@ -81,6 +81,8 @@ namespace MLTD.Enemy
 
             _currentHealth = _maxHealth;
 
+            _spawner.RemoveAgentFromTurrets(this);
+
             // Set the color of an AI depending of its type
             var rand = UnityEngine.Random.Range(0, 100);
             if (_settings.EnableLeadership && rand < _settings.LeadershipChance) MyType = RaycastOutput.ENEMY_LEADER;

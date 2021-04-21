@@ -16,11 +16,16 @@ namespace MLTD.Turret
         [SerializeField]
         private GameObject _turretPrefab;
 
-        private List<GameObject> _instanciated = new List<GameObject>();
+        private List<TurretController> _instanciated = new List<TurretController>();
 
         private void Awake()
         {
             Spawner.S.TurretZones.Add(this);
+        }
+
+        public void RemoveAgent(EnemyController ec)
+        {
+            _instanciated.ForEach(x => x.RemoveAgent(ec));
         }
 
         public void Regenerate()
@@ -29,7 +34,7 @@ namespace MLTD.Turret
             {
                 Destroy(go);
             }
-            _instanciated = new List<GameObject>();
+            _instanciated = new List<TurretController>();
             for (int x = -_xSize; x < _xSize; x++)
             {
                 for (int y = -_ySize; y < _ySize; y++)
@@ -38,7 +43,7 @@ namespace MLTD.Turret
                     {
                         var go = Instantiate(_turretPrefab, new Vector2(x + .5f, y + .5f), Quaternion.identity);
                         go.transform.parent = transform;
-                        _instanciated.Add(go);
+                        _instanciated.Add(go.GetComponent<TurretController>());
                     }
                 }
             }
