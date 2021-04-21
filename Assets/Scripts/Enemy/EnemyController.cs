@@ -23,10 +23,10 @@ namespace MLTD.Enemy
 
 
         // Life management
-        private const int _maxHealth = 50;
+        private const int _maxHealth = 20;
         private int _currentHealth = _maxHealth;
 
-        private float _lifeTimer;
+        // private float _lifeTimer;
 
         private void OnCollisionEnter2D(Collision2D collision)
         {
@@ -72,15 +72,15 @@ namespace MLTD.Enemy
             _basePos = transform.position;
         }
 
-        private void Update()
-        {
-            _lifeTimer -= Time.deltaTime;
-            if (_lifeTimer <= 0f)
-            {
-                SetReward(-1f);
-                EndEpisode();
-            }
-        }
+        // private void Update()
+        // {
+        //     _lifeTimer -= Time.deltaTime;
+        //     if (_lifeTimer <= 0f)
+        //     {
+        //         SetReward(-1f);
+        //         EndEpisode();
+        //     }
+        // }
 
         public override void OnEpisodeBegin()
         {
@@ -90,7 +90,7 @@ namespace MLTD.Enemy
                 _raySensor = GetComponentInChildren<RayPerceptionSensorComponent2D>();
             }
 
-            _lifeTimer = 20f;
+            // _lifeTimer = 20f;
 
             transform.position = _basePos;
             _rb.velocity = Vector3.zero;
