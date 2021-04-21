@@ -24,4 +24,4 @@ behaviors:
           num_layers: 2
     max_steps: 500000
     time_horizon: 64
-    summary_freq: 1000
+    summary_freq: 10000
