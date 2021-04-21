@@ -40,7 +40,8 @@ namespace MLTD.ML
             return true;
         }
 
-        public static NN read(string filename){
+        public static NN read(string filename)
+        {
             using FileStream file = new FileStream(filename, FileMode.Open, FileAccess.Read);
             using BinaryReader reader = new BinaryReader(file);
 
@@ -48,19 +49,22 @@ namespace MLTD.ML
 
             int hlcount = reader.ReadInt32();
             List<int> hiddenlayers = new List<int>(hlcount);
-            for(int i = 0; i < hlcount; ++i){
+            for (int i = 0; i < hlcount; ++i)
+            {
                 hiddenlayers.Add(reader.ReadInt32());
             }
 
             int outputcount = reader.ReadInt32();
             List<ADataType> outputs = new List<ADataType>(outputcount);
-            for(int i = 0; i < outputcount; ++i){
+            for (int i = 0; i < outputcount; ++i)
+            {
                 outputs.Add(DataTypeFactory.Read(reader));
             }
 
             int weightscount = reader.ReadInt32();
             List<Numeric.Matrix> weigths = new List<Numeric.Matrix>(weightscount);
-            for(int i = 0; i < weightscount; ++i){
+            for (int i = 0; i < weightscount; ++i)
+            {
                 weigths.Add(Numeric.Matrix.Read(reader));
             }
 
@@ -124,6 +128,48 @@ namespace MLTD.ML
                 size += dtype.size;
             }
             return size;
+        }
+
+        public void BackPropagate(List<float[]> data)
+        {
+            // for each weight we initialize a zero gradient
+
+            //for each element of the input data
+            //  we go Forward, but we keep the intermediates outputs
+
+            //
+
+        }
+
+        public List<Numeric.Vector> ForwardTraining(float[] data)
+        {
+            List<Numeric.Vector> result = new List<Numeric.Vector>(1 + hiddenLayers.Count * 2 + outputs.Count * 2);
+
+            Numeric.Vector input = new Numeric.Vector(data.Length);
+            input.data = data;
+
+            result.Add(input);
+
+            for (int i = 0; i < hiddenLayers.Count; ++i)
+            {
+                result.Add(Numeric.MatMultBias(weights[i], result[result.Count - 1]));
+                result.Add(Numeric.Sigmoid(result[result.Count - 1]));
+            }
+
+            int idx = result.Count - 1;
+
+            for(int i = 0; i < outputs.Count; ++i){
+                result.Add(
+                    Numeric.MatMultBias(weights[hiddenLayers.Count + i], result[idx])
+                );
+                result.Add(
+                    outputs[i].Forward(result[result.Count - 1])
+                );
+            }
+
+            result.RemoveAt(0);
+
+            return result;
         }
 
         public float[] Forward(float[] data)
