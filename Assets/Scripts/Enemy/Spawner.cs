@@ -28,8 +28,6 @@ namespace MLTD.Enemy
         [SerializeField]
         private AISettings _settings;
 
-        private const float _waveLength = 15f;
-
         // List of all instanciated ennemies
         private readonly List<EnemyController> _instancied = new List<EnemyController>();
 
@@ -46,8 +44,6 @@ namespace MLTD.Enemy
         public List<TurretZone> TurretZones { private set; get; } = new List<TurretZone>();
 
         public static Spawner S;
-
-        private float _lastBestScore = float.NaN;
 
         private void Awake()
         {
@@ -69,10 +65,11 @@ namespace MLTD.Enemy
             }
         }
 
+        public bool EndGame()
+        {
+            return _instancied.All(x => !x.IsAlive());
+        }
 
-        private const int bestOfMaxCount = 20;
-        private List<NN> networks = new List<NN>();
-        private List<(NN network, float score)> networks_BestOf = new List<(NN network, float score)>(bestOfMaxCount);
         /// <summary>
         /// Coroutine that manage the spawing and training of AI
         /// </summary>
@@ -85,7 +82,6 @@ namespace MLTD.Enemy
                 _isDebugSetManually = false;
             }
 
-            var maxSize = new Vector2(-transform.position.x + _x, transform.position.y + _y);
             int count = 0;
 
             foreach (var zone in TurretZones)
@@ -107,19 +103,14 @@ namespace MLTD.Enemy
 
                     // Set AI type
                     var ec = go.GetComponent<EnemyController>();
-                    var rand = Random.Range(0, 100);
-                    RaycastOutput type;
-                    if (_settings.EnableLeadership && rand < _settings.LeadershipChance) type = RaycastOutput.ENEMY_LEADER;
-                    else type = RaycastOutput.ENEMY_SCOUT;
-                    ec.Init(networks.Count == 0 ? null : new NN(networks[count]), type, this, _settings);
-                    ec.WorldMaxSize = maxSize;
+                    ec.Init(this, _settings);
                     ec.name = "AI " + count;
 
                     // We keep track of leaders
-                    if (type == RaycastOutput.ENEMY_LEADER)
+                    /*if (type == RaycastOutput.ENEMY_LEADER)
                     {
                         leaders.Add(ec);
-                    }
+                    }*/
                     _instancied.Add(ec);
                     count++;
                 }
@@ -137,37 +128,6 @@ namespace MLTD.Enemy
             _timeRemainding.text = $"Current wave: {_waveCount}";
         }
 
-        public void EndGame()
-        {
-            if (!_instancied.All(x => !x.IsAlive())) // If everyone isn't dead yet
-            {
-                return;
-            }
-            // Keep best AI and setup new neural networks for next generation
-            List<(NN network, float score)> oldgen = _instancied.Select(ec => (ec.Network, ec.GetScore())).ToList();
-            networks_BestOf.AddRange(oldgen);
-            networks_BestOf.Sort(delegate
-            ((NN network, float score) a, (NN network, float score) b)
-            {
-                return b.score.CompareTo(a.score);
-            });
-            networks_BestOf = networks_BestOf.Take(bestOfMaxCount).ToList();
-            if (_settings.EnableDebug)
-            {
-                _lastBestScore = oldgen.Max(x => x.score);
-            }
-            networks = GeneticAlgorithm.GeneratePool(oldgen, networks_BestOf, _instancied.Count);
-
-            // All AIs are killed
-            foreach (var p in _instancied)
-            {
-                Destroy(p.gameObject);
-            }
-            _instancied.RemoveAll(x => true);
-            _waveCount++;
-            SpawnAll();
-        }
-
         // Update the debug with the element the further on the X axis, is disabled if the user manually select an element
         private IEnumerator KeepDebugUpdated()
         {
@@ -179,7 +139,7 @@ namespace MLTD.Enemy
                     {
                         if (_instancied.Count > 0)
                         {
-                            SetDebug(_instancied.OrderByDescending(x => x.transform.position.x).First(), false);
+                            //SetDebug(_instancied.OrderByDescending(x => x.transform.position.x).First(), false);
                         }
                     }
                 }
@@ -207,70 +167,15 @@ namespace MLTD.Enemy
         /// </summary>
         /// <param name="input">Last infos the AI sent to the neural network</param>
         /// <param name="output">Last infos the AI received from the neural network</param>
-        private void DisplayDebug(EnemyController ec, InputData input, float[] rawOutput, OutputData output)
+        private void DisplayDebug(EnemyController ec)
         {
             StringBuilder str = new StringBuilder();
             str.AppendLine("<b>GENERAL</b>");
             str.AppendLine(ec.name + " - " + ec.MyType.ToString());
             var v = ec.GetVelocity();
             str.AppendLine($"Velocity: ({v.x:0.00};{v.y:0.00})");
-            str.AppendLine($"Current score: {(ec.GetScore()):0.00}");
-            str.AppendLine($"Last best score: {_lastBestScore:0.00}");
-
-            str.AppendLine("\n<b>INPUT</b>");
-            str.AppendLine($"Health: {input.Health} / {input.MaxHealth}");
-            str.AppendLine($"Position: ({input.Position.x:0.00};{input.Position.y:0.00})");
-            if (_settings.EnableLeadership)
-            {
-                str.AppendLine($"Leader Position: ({input.LeaderPosition.x:0.00};{input.LeaderPosition.y:0.00})");
-            }
-            str.AppendLine($"Direction: {input.Direction:0.00}");
-            str.AppendLine($"Speed: {input.Speed:0.00}");
-            int i = 1;
-            foreach (var ray in input.RaycastInfos)
-            {
-                str.AppendLine($"Raycast {i}: {ray.Item1} (Distance {ray.Item2:0.00})");
-                i++;
-            }
-            if (_settings.EnableMemory)
-            {
-                str.AppendLine("Memory: " + string.Join(", ", input.Memory.Select(x => x.ToString("0.00"))));
-            }
-
-            str.AppendLine("\n<b>OUTPUT</b>");
-            str.AppendLine($"Direction: {output.Direction:0.00}");
-            str.AppendLine($"Speed: {output.Speed:0.00}");
-            str.AppendLine("Skill state: " + output.SkillState);
-            str.AppendLine("Message: " + string.Join("", output.Message.Select(x => x ? "1" : "0")));
-            if (_settings.EnableMemory)
-            {
-                str.AppendLine("Memory: " + string.Join(", ", output.Memory.Select(x => x.ToString("0.00"))));
-            }
-
-            str.AppendLine("\n<b>RAW INPUT</b>");
-            str.AppendLine(string.Join(", ", Decision.InputToFloatArray(_settings, input).Select(x => x.ToString("0.00"))));
-
-            str.AppendLine("\n<b>RAW OUTPUT</b>");
-            str.AppendLine(string.Join(", ", rawOutput.Select(x => x.ToString("0.00"))));
 
             _debugText.text = str.ToString();
-        }
-
-        /// <summary>
-        /// Set callback method so an AI can send debug info
-        /// </summary>
-        /// <param name="ec">AI we will track</param>
-        public void SetDebug(EnemyController ec, bool isDebugSetManually)
-        {
-            if (_currentDebugFollowed != null)
-            {
-                _currentDebugFollowed.DisplayDebugCallback = null;
-            }
-            _isDebugSetManually = isDebugSetManually;
-            ec.DisplayDebugCallback = DisplayDebug;
-            _currentDebugFollowed = ec;
-            _debugDisplay.SetActive(true);
-            _debugText = _debugDisplay.GetComponentInChildren<Text>();
         }
     }
 }

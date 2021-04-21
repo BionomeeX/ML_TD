@@ -8,6 +8,7 @@ TagManager:
   - Wall
   - Turret
   - Victory
+  - EnemyLeader
   layers:
   - Default
   - TransparentFX
