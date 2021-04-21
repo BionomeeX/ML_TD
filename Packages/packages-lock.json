@@ -137,7 +137,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.ml-agents": {
-      "version": "file:C:/Users/Christian/Documents/GitHub/ml-agents/com.unity.ml-agents",
+      "version": "file:/media/ccarre/TOSHIBA EXT/game jam/ml-agents/com.unity.ml-agents",
       "depth": 0,
       "source": "local",
       "dependencies": {
