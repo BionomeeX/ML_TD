@@ -32,7 +32,7 @@ namespace MLTD.Turret
         {
             foreach (var go in _instanciated)
             {
-                Destroy(go);
+                Destroy(go.gameObject);
             }
             _instanciated = new List<TurretController>();
             for (int x = -_xSize; x < _xSize; x++)
