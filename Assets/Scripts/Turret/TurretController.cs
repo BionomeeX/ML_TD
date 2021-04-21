@@ -12,7 +12,7 @@ namespace MLTD.Turret
         private const int _reloadTimerRef = 25;
         private int _reloadTimer = 0;
 
-        private void Update()
+        private void FixedUpdate()
         {
             _reloadTimer++;
             if (_reloadTimer >= _reloadTimerRef && Triggers.Count > 0)

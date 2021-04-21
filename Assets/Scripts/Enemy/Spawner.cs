@@ -32,8 +32,10 @@ namespace MLTD.Enemy
         private readonly List<EnemyController> _instancied = new List<EnemyController>();
 
         // Spawn zone
-        private const int _x = 3;
-        private const int _y = 5;
+        [SerializeField]
+        private int _x = 3;
+        [SerializeField]
+        private int _y = 5;
 
         // Current wave
         private int _waveCount = 1;
