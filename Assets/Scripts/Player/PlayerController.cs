@@ -14,6 +14,7 @@ namespace MLTD.Player
         }
 
         private Rigidbody2D _rb;
+        private SpriteRenderer _sr;
 
         [SerializeField]
         private Text _goldDisplay;
@@ -28,6 +29,7 @@ namespace MLTD.Player
         private void Start()
         {
             _rb = GetComponent<Rigidbody2D>();
+            _sr = GetComponent<SpriteRenderer>();
             StartCoroutine(IncreaseGold());
         }
 
@@ -37,6 +39,13 @@ namespace MLTD.Player
             var hor = Input.GetAxis("Horizontal");
             var ver = Input.GetAxis("Vertical");
             _rb.velocity = new Vector2(hor, ver) * _speed;
+
+            if (hor != 0f || ver != 0f)
+            {
+                var angle = Mathf.Atan2(_rb.velocity.y, _rb.velocity.x) * Mathf.Rad2Deg;
+                transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+
+            }
         }
 
         public void UpdateGoldText()
