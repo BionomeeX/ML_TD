@@ -82,6 +82,8 @@ namespace MLTD.Enemy
             _rb.velocity = Vector3.zero;
             _rb.angularVelocity = 0f;
 
+            _currentHealth = _maxHealth;
+
             // Set the color of an AI depending of its type
             var rand = UnityEngine.Random.Range(0, 100);
             if (_settings.EnableLeadership && rand < _settings.LeadershipChance) MyType = RaycastOutput.ENEMY_LEADER;
