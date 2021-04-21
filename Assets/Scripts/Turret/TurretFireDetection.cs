@@ -14,7 +14,7 @@ namespace MLTD.Turret
 
         private void OnTriggerEnter2D(Collider2D collision)
         {
-            if (collision.CompareTag("Enemy"))
+            if (collision.tag.StartsWith("Enemy"))
             {
                 tc.Triggers.Add(collision.GetComponent<EnemyController>());
             }
@@ -22,7 +22,7 @@ namespace MLTD.Turret
 
         private void OnTriggerExit2D(Collider2D collision)
         {
-            if (collision.CompareTag("Enemy"))
+            if (collision.tag.StartsWith("Enemy"))
             {
                 tc.Triggers.Remove(collision.GetComponent<EnemyController>());
             }
