@@ -139,10 +139,8 @@ namespace MLTD.Enemy
         // When using rotation, speed is velocity magnitude and direction our angle
         // Else speed is velocity on X axis and direction the one on Y
 
-        [Observable]
         private RayPerceptionSensorComponent2D _raySensor;
 
-        [Observable]
         public float Speed
         {
             get
@@ -153,7 +151,6 @@ namespace MLTD.Enemy
             }
         }
 
-        [Observable]
         public float Direction
         {
             get
@@ -162,6 +159,13 @@ namespace MLTD.Enemy
                     transform.rotation.eulerAngles.z / 360f :
                     _rb.velocity.y / _settings.AgentLinearSpeed;
             }
+        }
+
+        public override void CollectObservations(VectorSensor sensor)
+        {
+            sensor.AddObservation(Speed);
+            sensor.AddObservation(Direction);
+            sensor.AddObservation(_raySensor);
         }
 
         public override void OnActionReceived(ActionBuffers vectorAction)
