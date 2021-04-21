@@ -75,7 +75,7 @@ namespace MLTD.Enemy
             if (_rb == null)
             {
                 _rb = GetComponent<Rigidbody2D>();
-                _raySensor = GetComponent<RayPerceptionSensorComponent2D>();
+                _raySensor = GetComponentInChildren<RayPerceptionSensorComponent2D>();
             }
 
             transform.position = _basePos;
