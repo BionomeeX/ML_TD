@@ -44,10 +44,7 @@ namespace MLTD.Enemy
             {
                 GetComponent<SpriteRenderer>().color = Color.gray;
                 MyType = RaycastOutput.ENEMY_DEAD;
-                if (_spawner.EndGame())
-                {
-                    EndEpisode();
-                }
+                EndEpisode();
             }
         }
         public bool IsAlive()
@@ -172,11 +169,6 @@ namespace MLTD.Enemy
 
         public override void OnActionReceived(ActionBuffers vectorAction)
         {
-            if (!IsAlive())
-            {
-                return;
-            }
-
             var speed = vectorAction.ContinuousActions[0];
             var direction = vectorAction.ContinuousActions[1];
 
