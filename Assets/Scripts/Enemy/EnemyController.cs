@@ -1,10 +1,7 @@
 using MLTD.ML;
-using System;
-using System.Collections.Generic;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
-using Unity.MLAgents.Sensors.Reflection;
 using UnityEngine;
 
 namespace MLTD.Enemy
@@ -28,6 +25,8 @@ namespace MLTD.Enemy
         // Life management
         private const int _maxHealth = 10;
         private int _currentHealth = _maxHealth;
+
+        private float _lifeTimer;
 
         private void OnCollisionEnter2D(Collision2D collision)
         {
@@ -70,6 +69,15 @@ namespace MLTD.Enemy
             _basePos = transform.position;
         }
 
+        private void Update()
+        {
+            _lifeTimer -= Time.deltaTime;
+            if (_lifeTimer <= 0f)
+            {
+                EndEpisode();
+            }
+        }
+
         public override void OnEpisodeBegin()
         {
             if (_rb == null)
@@ -77,6 +85,8 @@ namespace MLTD.Enemy
                 _rb = GetComponent<Rigidbody2D>();
                 _raySensor = GetComponentInChildren<RayPerceptionSensorComponent2D>();
             }
+
+            _lifeTimer = 20f;
 
             transform.position = _basePos;
             _rb.velocity = Vector3.zero;
