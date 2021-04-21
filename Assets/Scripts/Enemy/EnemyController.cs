@@ -167,7 +167,7 @@ namespace MLTD.Enemy
         public override void OnActionReceived(ActionBuffers vectorAction)
         {
             var speed = vectorAction.ContinuousActions[0];
-            var direction = vectorAction.ContinuousActions[0];
+            var direction = vectorAction.ContinuousActions[1];
 
             var lastPos = transform.position;
 
@@ -196,7 +196,7 @@ namespace MLTD.Enemy
             }
             _rb.velocity = Vector2.ClampMagnitude(_rb.velocity, _settings.AgentLinearSpeed);
 
-            AddReward(transform.position.x - lastPos.x);
+            SetReward(transform.position.x - lastPos.x);
         }
 
         public Vector2 GetVelocity()
