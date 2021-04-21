@@ -33,7 +33,7 @@ namespace MLTD.Enemy
         {
             if (collision.collider.CompareTag("Victory"))
             {
-                SetReward(1100f);
+                AddReward(1100f);
                 TakeDamage(1000);
             }
         }
@@ -41,10 +41,10 @@ namespace MLTD.Enemy
         public void TakeDamage(int value)
         {
             _currentHealth -= value;
-            SetReward(-10f);
+            AddReward(-10f);
             if (_currentHealth <= 0) // Is dead
             {
-                SetReward(-100f);
+                AddReward(-100f);
                 GetComponent<SpriteRenderer>().color = Color.gray;
                 MyType = RaycastOutput.ENEMY_DEAD;
                 EndEpisode();
@@ -169,6 +169,7 @@ namespace MLTD.Enemy
         {
             sensor.AddObservation(Speed);
             sensor.AddObservation(Direction);
+            sensor.AddObservation(transform.position);
             sensor.AddObservation(_raySensor);
         }
 
@@ -205,7 +206,7 @@ namespace MLTD.Enemy
             _rb.velocity = Vector2.ClampMagnitude(_rb.velocity, _settings.AgentLinearSpeed);
 
             //SetReward(transform.position.x - lastPos.x);
-            SetReward(transform.position.x - lastPos.x > 0f ? 3f : -2f);
+            AddReward(transform.position.x - lastPos.x > 0f ? 3f : -2f);
 
         }
 
