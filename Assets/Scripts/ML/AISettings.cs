@@ -11,6 +11,10 @@ namespace MLTD.ML
         [Range(1, 50)]
         public float AgentLinearSpeed = 5f;
 
+        [Tooltip("Penality speed multiplicator for an AI when moving backward")]
+        [Range(0.1f, 1f)]
+        public float BackwardSpeedMultiplicator = .1f;
+
         [Tooltip("Angular speed of the agent")]
         [Range(1, 50)]
         public float AgentAngularSpeed = 10f;
@@ -20,6 +24,7 @@ namespace MLTD.ML
 
         [Tooltip("If enabled, the AI will rotate instead of strafing")]
         public bool ReplaceStrafeByRotation = true;
+
 
         [Header("Vision settings")]
 
@@ -61,15 +66,17 @@ namespace MLTD.ML
         [Header("Memory settings")]
 
         [Tooltip("Enable memory: AI will remember what it saw recently")]
-        public bool EnableMemory = false;
+        public bool EnableMemory = true;
 
-        [Tooltip("How many data the AI will remember, really costly performance wise")]
+        [Tooltip("How many data the AI will remember")]
         [Range(1, 100)]
-        public int MemorySize = 5;
+        public int MemorySize = 10;
 
-        [Tooltip("How much time will past between 2 data acquisition")]
-        [Range(0.02f, 5f)]
-        public float TimeBetweenMemoryAcquisition = 1f;
+
+        [Header("Structure settings")]
+
+        [Tooltip("Neurones per hidden layers")]
+        public int[] HiddenLayer = new []{30};
 
 
         [Header("Debug settings")]

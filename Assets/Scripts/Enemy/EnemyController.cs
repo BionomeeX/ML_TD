@@ -18,11 +18,11 @@ namespace MLTD.Enemy
 
         // Constants for messages sent/received
         // Number max of message sent by an AI
-        private const int nbMessagesInput = 5;
+        private const int nbMessagesInput = 5; // TODO: move into config file
         // Size of a message sent
         private const int messageSize = 10;
 
-        private List<Tuple<RaycastOutput, Vector2>> _memory = new List<Tuple<RaycastOutput, Vector2>>();
+        private float[] _memory;
 
         // Type of the AI, must be ENEMY_*
         public RaycastOutput MyType { private set; get; }
@@ -31,17 +31,46 @@ namespace MLTD.Enemy
         private EnemyController _leader;
 
         // Function we send debug info to
-        public Action<EnemyController, InputData, OutputData> DisplayDebugCallback { set; get; }
+        public Action<EnemyController, InputData, float[], OutputData> DisplayDebugCallback { set; get; }
 
         // Keep track of the spawner that instanciated us
         private Spawner _spawner;
 
         // Last message we generated from the neural network
         private bool[] _lastMessage = new bool[messageSize];
-        private int _lastMessageKept = 0;
 
         // Value to remove to the score calculated for the neural network performance
-        public float MalusScore { private set; get; }
+        private float _malusScore;
+
+        public float GetScore()
+        {
+            return transform.position.x - _malusScore;
+        }
+
+        // Life management
+        private const int _maxHealth = 10;
+        private int _currentHealth = _maxHealth;
+
+        private void OnCollisionEnter2D(Collision2D collision)
+        {
+            if (collision.collider.CompareTag("Victory"))
+            {
+                TakeDamage(1000);
+            }
+        }
+
+        public void TakeDamage(int value)
+        {
+            _currentHealth -= value;
+            if (_currentHealth <= 0) // Is dead
+            {
+                GetComponent<SpriteRenderer>().color = Color.gray;
+                MyType = RaycastOutput.ENEMY_DEAD;
+                _spawner.EndGame();
+            }
+        }
+        public bool IsAlive()
+            => _currentHealth > 0;
 
         /// <summary>
         /// When clicking on an AI, we begin to track its debug info
@@ -54,6 +83,10 @@ namespace MLTD.Enemy
         private void Start()
         {
             _rb = GetComponent<Rigidbody2D>();
+            if (_settings.EnableMemory)
+            {
+                _memory = new float[_settings.MemorySize];
+            }
         }
 
         public void Init(NN network, RaycastOutput type, Spawner spawner, AISettings settings)
@@ -72,11 +105,23 @@ namespace MLTD.Enemy
             {
                 outputTypes.Add(new ML.Boolean());
             }
+
+            if (_settings.EnableMemory)
+            {
+                for (int i = 0; i < _settings.MemorySize; ++i)
+                {
+                    outputTypes.Add(new ML.Range(0f, 1f));
+                }
+            }
+
+            // NNstruct = new List<int>(_settings.NNstruct)
+
             // Setup the neural network, if none provided, we create a new one that will contains random values
             Network = network ?? new NN(
                 Decision.GetFloatArraySize(_settings, nbMessagesInput, messageSize),
                 outputTypes,
-                new List<int> { 30 }
+                //new List<int> { 30 }
+                new List<int>(_settings.HiddenLayer)
                 );
 
             // Set the color of an AI depending of its type
@@ -102,7 +147,12 @@ namespace MLTD.Enemy
 
         private void FixedUpdate()
         {
-            _lastMessageKept++;
+            if (_currentHealth <= 0)
+            {
+                _rb.velocity = Vector2.zero;
+                return;
+            }
+
             // Fire raycasts and get info from each of them
             List<Tuple<RaycastOutput, float>> raycasts = new List<Tuple<RaycastOutput, float>>();
             foreach (var dir in _settings.VisionAngles)
@@ -128,20 +178,11 @@ namespace MLTD.Enemy
                         "Enemy" => hit.collider.GetComponent<EnemyController>().MyType,
                         "Wall" => RaycastOutput.WALL,
                         "Turret" => RaycastOutput.TURRET_NORMAL,
+                        "Victory" => RaycastOutput.VICTORY,
                         _ => RaycastOutput.UNKNOWN,
                     };
                 }
                 raycasts.Add(new Tuple<RaycastOutput, float>(ro, dist));
-                if (_settings.EnableMemory && dir == 0f && _lastMessageKept >= _settings.TimeBetweenMemoryAcquisition * 50f) // FixedUpdate is called every 0.02 seconds by default
-                {
-                    _lastMessageKept = 0;
-                    var mData = new Tuple<RaycastOutput, Vector2>(ro, hit.point);
-                    if (_memory.Count == _settings.MemorySize)
-                    {
-                        _memory.RemoveAt(0);
-                    }
-                    _memory.Add(mData);
-                }
             }
 
             // If we have a leader, display debug green line between AI and him
@@ -173,7 +214,9 @@ namespace MLTD.Enemy
                 WorldSize = WorldMaxSize,
                 Position = transform.position,
                 RaycastInfos = raycasts.ToArray(),
-                RaycastMaxSize = _settings.VisionAngles.Length
+                RaycastMaxSize = _settings.VisionAngles.Length,
+                Health = _currentHealth,
+                MaxHealth = _maxHealth
             };
             // When using rotation, speed is velocity magnitude and direction our angle
             // Else speed is velocity on X axis and direction the one on Y
@@ -212,21 +255,17 @@ namespace MLTD.Enemy
 
             if (_settings.EnableMemory)
             {
-                var dataMemory = new List<Tuple<RaycastOutput, Vector2>>(_memory);
-                for (int i = dataMemory.Count; i < _settings.MemorySize; i++)
-                {
-                    dataMemory.Add(new Tuple<RaycastOutput, Vector2>(RaycastOutput.NONE, Vector2.zero));
-                }
-                data.Memory = dataMemory.ToArray();
+                data.Memory = _memory;
             }
 
             // Call to neural network
-            var output = Decision.Decide(_settings, data, Network);
+            var fOutput = Decision.Decide(_settings, data, Network);
+            var output = Decision.FloatArrayToOutput(_settings, fOutput);
 
             // If a debug callback is set, we use it
             if (_settings.EnableDebug)
             {
-                DisplayDebugCallback?.Invoke(this, data, output);
+                DisplayDebugCallback?.Invoke(this, data, fOutput, output);
             }
 
             // Use info returned by neural network
@@ -235,12 +274,12 @@ namespace MLTD.Enemy
             // Else we just move by speed and direction on the corresponding axises
             if (_settings.ReplaceStrafeByRotation)
             {
-                forceUsed = transform.right * output.Speed * _settings.AgentLinearSpeed;
+                forceUsed = transform.right * output.Speed * _settings.AgentLinearSpeed * (output.Speed > 0f ? 1f : _settings.BackwardSpeedMultiplicator);
                 transform.Rotate(new Vector3(0f, 0f, output.Direction * _settings.AgentLinearSpeed));
             }
             else
             {
-                forceUsed = transform.right * output.Speed * _settings.AgentLinearSpeed
+                forceUsed = transform.right * output.Speed * _settings.AgentLinearSpeed * (output.Speed > 0f ? 1f : _settings.BackwardSpeedMultiplicator)
                         + transform.up * output.Direction * _settings.AgentLinearSpeed;
             }
             // If we smoothen the movements, we add it add force, else we just set the velocity
@@ -254,10 +293,7 @@ namespace MLTD.Enemy
             }
             _rb.velocity = Vector2.ClampMagnitude(_rb.velocity, _settings.AgentLinearSpeed);
             _lastMessage = output.Message;
-        }
-
-        public void OnDrawGizmos()
-        {
+            _memory = output.Memory;
         }
 
         public Vector2 GetVelocity()

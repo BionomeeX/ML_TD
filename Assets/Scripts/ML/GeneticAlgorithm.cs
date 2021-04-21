@@ -74,34 +74,60 @@ namespace MLTD.ML
             return result;
         }
 
+        public static List<NN> GenerateBestFromOneList(List<(NN network, float score)> lNN, int ngen, float scale) {
+            List<NN> result = new List<NN>(ngen);
+
+            for (int i = 0; i < ngen; ++i)
+            {
+                NN newNN = new NN(lNN[0].network);
+                NN noiseNN = NN.RandomLike(lNN[0].network);
+
+                for(int w = 0; w < noiseNN.weights.Count; ++w){
+                    noiseNN.weights[w].ScaleByLine();
+                    noiseNN.weights[w].Multiply(scale);
+                    newNN.weights[w].Add(noiseNN.weights[w]);
+
+                    newNN.weights[w].ScaleByLine();
+                }
+
+
+                result.Add(newNN);
+            }
+
+            return result;
+        }
+
         // generate from a pool of NN
         public static List<NN> GeneratePool(List<(NN network, float score)> agents_LG, List<(NN network, float score)> agents_BoA, int ngenerated)
         {
 
             List<NN> nns = new List<NN>(ngenerated);
-            int top = 10;
+            // int top = 10;
 
-            float smallscale = 0.05f;
+            // float smallscale = 0.05f;
 
-            top = agents_LG.Count > top ? top : agents_LG.Count - 1;
+            // top = agents_LG.Count > top ? top : agents_LG.Count - 1;
 
-            // We sort by score
-            agents_LG.Sort(delegate
-            ((NN network, float score) a, (NN network, float score) b)
-            {
-                return b.score.CompareTo(a.score);
-            });
+            // // We sort by score
+            // agents_LG.Sort(delegate
+            // ((NN network, float score) a, (NN network, float score) b)
+            // {
+            //     return b.score.CompareTo(a.score);
+            // });
 
-            List<(NN network, float score)> tops = agents_LG.Take(top).ToList();
+            // List<(NN network, float score)> tops = agents_LG.Take(top).ToList();
 
-            // 30 % of ngenerated will be made with best choice
-            int n20percent = (int)(ngenerated * 0.2);
 
-            nns.AddRange(SelectFromOneList(agents_BoA, n20percent));
-            nns.AddRange(SelectFromOneList(tops, n20percent));
-            nns.AddRange(GenerateFromOneList(tops, n20percent, smallscale));
-            nns.AddRange(GenerateFromTwoList(agents_BoA, tops, n20percent, smallscale));
-            for(int i = 0; i < ngenerated - 4 * n20percent; ++i){
+            // 20 % of ngenerated will be made with best choice
+            int n80percent = (int)(ngenerated * 0.8);
+
+            // nns.AddRange(SelectFromOneList(agents_BoA, n20percent));
+            // nns.AddRange(SelectFromOneList(tops, n20percent));
+            // nns.AddRange(GenerateFromOneList(tops, n20percent, smallscale));
+            // nns.AddRange(GenerateFromTwoList(agents_BoA, tops, n20percent, smallscale));
+            nns.AddRange(GenerateBestFromOneList(agents_BoA, n80percent, 0.001f));
+
+            for(int i = 0; i < ngenerated - n80percent; ++i){
                 nns.Add(NN.RandomLike(agents_BoA[0].network));
             }
 

@@ -80,7 +80,7 @@ namespace MLTD.ML
 
             this.weights.Add(new Numeric.Matrix(this.hiddenLayers[0], this.inputSize + 1));
 
-            for (int i = 0; i < this.weights.Count - 2; ++i)
+            for (int i = 0; i < this.hiddenLayers.Count - 1; ++i)
             {
                 this.weights.Add(new Numeric.Matrix(this.hiddenLayers[i + 1], this.hiddenLayers[i] + 1));
             }

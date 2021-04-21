@@ -12,7 +12,7 @@ namespace MLTD.Turret
         private GameObject _turret;
 
         // List of all turrets instanciated
-        private Dictionary<Vector2Int, GameObject> _turrets = new Dictionary<Vector2Int, GameObject>();
+        private readonly Dictionary<Vector2Int, GameObject> _turrets = new Dictionary<Vector2Int, GameObject>();
 
         public void Update()
         {

@@ -21,6 +21,9 @@ namespace MLTD.ML
 
         public Vector2 LeaderPosition;
 
-        public Tuple<RaycastOutput, Vector2>[] Memory;
+        public float[] Memory;
+
+        public int Health;
+        public int MaxHealth;
     }
 }

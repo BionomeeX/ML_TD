@@ -10,19 +10,21 @@ namespace MLTD.ML
         // Get the size of a request to the neural network
         public static int GetFloatArraySize(AISettings settings, int nbMessages, int msgSize)
         {
-            InputData data = new InputData();
+            InputData data = new InputData
+            {
+                WorldSize = Vector2.one,
+                Position = Vector2.one,
+                Direction = 1f,
+                Speed = 1f,
+                RaycastInfos = new Tuple<RaycastOutput, float>[settings.VisionAngles.Length],
+                RaycastMaxSize = settings.VisionAngles.Length,
+                CanUseSkill = false,
+                SkillTimer = 0f,
+                SkillTimerMaxDuration = 0f
+            };
 
-            data.WorldSize = Vector2.one;
-            data.Position = Vector2.one;
-            data.Direction = 1f;
-            data.Speed = 1f;
-            data.RaycastInfos = new Tuple<RaycastOutput, float>[settings.VisionAngles.Length];
             for (int i = 0; i < settings.VisionAngles.Length; i++)
                 data.RaycastInfos[i] = new Tuple<RaycastOutput, float>(RaycastOutput.NONE, 0f);
-            data.RaycastMaxSize = settings.VisionAngles.Length;
-            data.CanUseSkill = false;
-            data.SkillTimer = 0f;
-            data.SkillTimerMaxDuration = 0f;
 
             if (settings.EnableLeadership)
             {
@@ -36,9 +38,7 @@ namespace MLTD.ML
 
             if (settings.EnableMemory)
             {
-                data.Memory = new Tuple<RaycastOutput, Vector2>[settings.MemorySize];
-                for (int i = 0; i < settings.MemorySize; i++)
-                    data.Memory[i] = new Tuple<RaycastOutput, Vector2>(RaycastOutput.NONE, Vector2.zero);
+                data.Memory = new float[settings.MemorySize];
             }
 
             return InputToFloatArray(settings, data).Length;
@@ -54,6 +54,7 @@ namespace MLTD.ML
             data.Add(myPos.y);
             data.Add(input.Direction);
             data.Add(input.Speed);
+            data.Add(input.Health / (float)input.MaxHealth);
             foreach (var elem in input.RaycastInfos)
             {
                 var max = Enum.GetValues(typeof(RaycastOutput)).Cast<int>().Max() + 1;
@@ -81,36 +82,39 @@ namespace MLTD.ML
             {
                 foreach (var elem in input.Memory)
                 {
-                    var max = Enum.GetValues(typeof(RaycastOutput)).Cast<int>().Max() + 1;
-                    List<float> elems = new List<float>();
-                    for (int i = 0; i < max * 2; i++) elems.Add(0f);
-                    elems[(int)elem.Item1 * 2] = elem.Item2.x;
-                    elems[(int)elem.Item1 * 2 + 1] = elem.Item2.y;
-                    data.AddRange(elems);
+                    data.Add(elem);
                 }
             }
             return data.ToArray();
         }
 
         // Neural network float array to output structure
-        private static OutputData FloatArrayToOutput(float[] output)
+        public static OutputData FloatArrayToOutput(AISettings settings, float[] output)
         {
-            var o = new OutputData();
-            o.Direction = output[0];
-            o.Speed = output[1];
-            o.SkillState = output[2] > .5f;
+            var o = new OutputData
+            {
+                Direction = output[0],
+                Speed = output[1],
+                SkillState = output[2] > .5f
+            };
             List<bool> msg = new List<bool>();
-            for (int i = 3; i < output.Length; i++) msg.Add(output[i] < .5f);
+            for (int i = 3; i < 13; i++) msg.Add(output[i] < .5f);
             o.Message = msg.ToArray();
+            if (settings.EnableMemory)
+            {
+                List<float> memory = new List<float>();
+                for (int i = 13; i < 13 + settings.MemorySize; i++) memory.Add(output[i]);
+                o.Memory = memory.ToArray();
+            }
             return o;
         }
 
         // Call to the neural network
-        public static OutputData Decide(AISettings settings, InputData input, NN neuralNet)
+        public static float[] Decide(AISettings settings, InputData input, NN neuralNet)
         {
             var iFloat = InputToFloatArray(settings, input);
 
-            return FloatArrayToOutput(neuralNet.Forward(iFloat));
+            return neuralNet.Forward(iFloat);
         }
     }
 }

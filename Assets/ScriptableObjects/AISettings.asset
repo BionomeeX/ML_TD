@@ -11,8 +11,9 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d9cfe5572072f0a4d8e6bea084a57f98, type: 3}
   m_Name: AISettings
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   AgentLinearSpeed: 5
+  BackwardSpeedMultiplicator: 0.1
   AgentAngularSpeed: 10
   SmoothenMovements: 1
   ReplaceStrafeByRotation: 1
@@ -27,9 +28,9 @@ MonoBehaviour:
   EnableLeadership: 1
   LeadershipChance: 5
   LeadershipMaxDistance: 15
-  EnableMemory: 0
-  MemorySize: 5
-  TimeBetweenMemoryAcquisition: 2
+  EnableMemory: 1
+  MemorySize: 10
+  HiddenLayer: 05000000050000000500000005000000050000000500000005000000
   EnableDebug: 1
   VisionDebug: {r: 0, g: 0, b: 0, a: 0}
   VisionCollidingDebug: {r: 0, g: 0, b: 1, a: 1}
