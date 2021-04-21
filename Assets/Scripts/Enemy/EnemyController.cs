@@ -23,7 +23,7 @@ namespace MLTD.Enemy
 
 
         // Life management
-        private const int _maxHealth = 10;
+        private const int _maxHealth = 50;
         private int _currentHealth = _maxHealth;
 
         private float _lifeTimer;
@@ -32,18 +32,21 @@ namespace MLTD.Enemy
         {
             if (collision.collider.CompareTag("Victory"))
             {
-                AddReward(1100f);
                 TakeDamage(1000);
+                SetReward(1f);
+            }
+            if (collision.collider.CompareTag("Turret")){
+                AddReward(-0.05f);
             }
         }
 
         public void TakeDamage(int value)
         {
             _currentHealth -= value;
-            AddReward(-10f);
+            AddReward(-0.01f);
             if (_currentHealth <= 0) // Is dead
             {
-                AddReward(-100f);
+                SetReward(-1f);
                 GetComponent<SpriteRenderer>().color = Color.gray;
                 MyType = RaycastOutput.ENEMY_DEAD;
                 EndEpisode();
@@ -74,6 +77,7 @@ namespace MLTD.Enemy
             _lifeTimer -= Time.deltaTime;
             if (_lifeTimer <= 0f)
             {
+                SetReward(-1f);
                 EndEpisode();
             }
         }
@@ -185,6 +189,8 @@ namespace MLTD.Enemy
 
         public override void OnActionReceived(ActionBuffers vectorAction)
         {
+            SetReward(0f);
+
             var speed = vectorAction.ContinuousActions[0];
             var direction = vectorAction.ContinuousActions[1];
 
@@ -216,8 +222,7 @@ namespace MLTD.Enemy
             _rb.velocity = Vector2.ClampMagnitude(_rb.velocity, _settings.AgentLinearSpeed);
 
             //SetReward(transform.position.x - lastPos.x);
-            AddReward(transform.position.x - lastPos.x > 0f ? 3f : -2f);
-
+            AddReward(transform.position.x - lastPos.x > 0f ? +0.3f : -0.2f);
         }
 
         public Vector2 GetVelocity()
