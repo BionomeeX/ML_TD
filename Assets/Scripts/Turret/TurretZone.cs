@@ -36,7 +36,9 @@ namespace MLTD.Turret
                 {
                     if (Random.Range(0, 100) < _chance)
                     {
-                        _instanciated.Add(Instantiate(_turretPrefab, new Vector2(x +.5f, y + .5f), Quaternion.identity));
+                        var go = Instantiate(_turretPrefab, new Vector2(x + .5f, y + .5f), Quaternion.identity);
+                        go.transform.parent = transform;
+                        _instanciated.Add(go);
                     }
                 }
             }
