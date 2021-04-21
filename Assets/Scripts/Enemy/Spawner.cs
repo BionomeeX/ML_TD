@@ -70,11 +70,21 @@ namespace MLTD.Enemy
             {
                 StartCoroutine(KeepDebugUpdated());
             }
+            StartCoroutine(RespawnTurrets());
         }
 
         public bool EndGame()
         {
             return _instancied.All(x => !x.IsAlive());
+        }
+
+        private IEnumerator RespawnTurrets()
+        {
+            yield return new WaitForSeconds(60f);
+            foreach (var zone in TurretZones)
+            {
+                zone.Regenerate();
+            }
         }
 
         /// <summary>
